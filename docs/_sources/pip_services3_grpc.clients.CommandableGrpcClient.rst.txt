@@ -1,0 +1,7 @@
+pip\_services3\_grpc.clients.CommandableGrpcClient module
+=========================================================
+
+.. automodule:: pip_services3_grpc.clients.CommandableGrpcClient
+   :members:
+   :undoc-members:
+   :show-inheritance:

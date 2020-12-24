@@ -1,0 +1,7 @@
+pip\_services3\_grpc.services.GrpcEndpoint module
+=================================================
+
+.. automodule:: pip_services3_grpc.services.GrpcEndpoint
+   :members:
+   :undoc-members:
+   :show-inheritance:

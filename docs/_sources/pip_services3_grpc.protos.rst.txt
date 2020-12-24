@@ -1,0 +1,19 @@
+pip\_services3\_grpc.protos package
+===================================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pip_services3_grpc.protos.commandable_pb2
+   pip_services3_grpc.protos.commandable_pb2_grpc
+
+Module contents
+---------------
+
+.. automodule:: pip_services3_grpc.protos
+   :members:
+   :undoc-members:
+   :show-inheritance:

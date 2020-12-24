@@ -1,0 +1,7 @@
+pip\_services3\_grpc.protos.commandable\_pb2 module
+===================================================
+
+.. automodule:: pip_services3_grpc.protos.commandable_pb2
+   :members:
+   :undoc-members:
+   :show-inheritance:

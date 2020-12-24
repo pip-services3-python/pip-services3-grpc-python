@@ -1,0 +1,7 @@
+pip\_services3\_grpc.build.DefaultGrpcFactory module
+====================================================
+
+.. automodule:: pip_services3_grpc.build.DefaultGrpcFactory
+   :members:
+   :undoc-members:
+   :show-inheritance:

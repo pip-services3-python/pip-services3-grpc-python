@@ -1,0 +1,7 @@
+pip\_services3\_grpc.clients.GrpcClient module
+==============================================
+
+.. automodule:: pip_services3_grpc.clients.GrpcClient
+   :members:
+   :undoc-members:
+   :show-inheritance:

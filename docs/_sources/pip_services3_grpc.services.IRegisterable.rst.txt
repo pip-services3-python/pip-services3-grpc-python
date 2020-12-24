@@ -1,0 +1,7 @@
+pip\_services3\_grpc.services.IRegisterable module
+==================================================
+
+.. automodule:: pip_services3_grpc.services.IRegisterable
+   :members:
+   :undoc-members:
+   :show-inheritance:

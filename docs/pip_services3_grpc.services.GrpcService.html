@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pip_services3_grpc.services.GrpcService module &mdash; pip-services3-grpc  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pip_services3_grpc.services.IRegisterable module" href="pip_services3_grpc.services.IRegisterable.html" />
+    <link rel="prev" title="pip_services3_grpc.services.GrpcEndpoint module" href="pip_services3_grpc.services.GrpcEndpoint.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> pip-services3-grpc
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pip_services3_grpc</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pip_services3_grpc.html">pip_services3_grpc package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pip_services3_grpc.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pip_services3_grpc.build.html">pip_services3_grpc.build package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pip_services3_grpc.clients.html">pip_services3_grpc.clients package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pip_services3_grpc.protos.html">pip_services3_grpc.protos package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pip_services3_grpc.services.html">pip_services3_grpc.services package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pip_services3_grpc.html#module-pip_services3_grpc">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pip-services3-grpc</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">pip_services3_grpc</a> &raquo;</li>
+        
+          <li><a href="pip_services3_grpc.html">pip_services3_grpc package</a> &raquo;</li>
+        
+          <li><a href="pip_services3_grpc.services.html">pip_services3_grpc.services package</a> &raquo;</li>
+        
+      <li>pip_services3_grpc.services.GrpcService module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/pip_services3_grpc.services.GrpcService.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-pip_services3_grpc.services.GrpcService">
+<span id="pip-services3-grpc-services-grpcservice-module"></span><h1>pip_services3_grpc.services.GrpcService module<a class="headerlink" href="#module-pip_services3_grpc.services.GrpcService" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pip_services3_grpc.services.GrpcService.GrpcService">
+<em class="property">class </em><code class="sig-prename descclassname">pip_services3_grpc.services.GrpcService.</code><code class="sig-name descname">GrpcService</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">service_name</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_commons.run.IOpenable.IOpenable</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_commons.config.IConfigurable.IConfigurable</span></code>, <a class="reference internal" href="pip_services3_grpc.services.IRegisterable.html#pip_services3_grpc.services.IRegisterable.IRegisterable" title="pip_services3_grpc.services.IRegisterable.IRegisterable"><code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_grpc.services.IRegisterable.IRegisterable</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_commons.refer.IUnreferenceable.IUnreferenceable</span></code></p>
+<p>Abstract service that receives remove calls via GRPC protocol.</p>
+<dl class="simple">
+<dt>### Configuration parameters ###</dt><dd><ul class="simple">
+<li><p>dependencies:
+- endpoint:              override for GRPC Endpoint dependency
+- controller:            override for Controller dependency</p></li>
+<li><p>connection(s):
+- discovery_key:         (optional) a key to retrieve the connection from <code class="xref py py-class docutils literal notranslate"><span class="pre">IDiscovery</span></code>
+- protocol:              connection protocol: http or https
+- host:                  host name or IP address
+- port:                  port number
+- uri:                   resource URI or connection string with all parameters in it</p></li>
+<li><p>credential - the HTTPS credentials:
+- ssl_key_file:         the SSL private key in PEM
+- ssl_crt_file:         the SSL certificate in PEM
+- ssl_ca_file:          the certificate authorities (root cerfiticates) in PEM</p></li>
+</ul>
+</dd>
+<dt>### Example ###</dt><dd><p>TODO!!!</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pip_services3_grpc.services.GrpcService.GrpcService.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes component and frees used resources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>correlation_id</strong> – (optional) transaction id to trace execution through call chain.</p></li>
+<li><p><strong>callback</strong> – callback function that receives error or null no errors occured.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pip_services3_grpc.services.GrpcService.GrpcService.configure">
+<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.configure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configures component by passing configuration parameters.
+:param config: configuration parameters to be set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pip_services3_grpc.services.GrpcService.GrpcService.is_open">
+<code class="sig-name descname">is_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.is_open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the component is opened.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>true if the component has been opened and false otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pip_services3_grpc.services.GrpcService.GrpcService.open">
+<code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens the component.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>correlation_id</strong> – (optional) transaction id to trace execution through call chain.</p></li>
+<li><p><strong>callback</strong> – callback function that receives error or null no errors occured.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pip_services3_grpc.services.GrpcService.GrpcService.register">
+<code class="sig-name descname">register</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers all service routes in Grpc endpoint.
+This method is called by the service and must be overriden
+in child classes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pip_services3_grpc.services.GrpcService.GrpcService.register_commadable_method">
+<code class="sig-name descname">register_commadable_method</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">schema</span></em>, <em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.register_commadable_method" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pip_services3_grpc.services.GrpcService.GrpcService.set_references">
+<code class="sig-name descname">set_references</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">references</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.set_references" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets references to this endpoint’s logger, counters, and connection resolver.</p>
+<dl class="simple">
+<dt>### References ###</dt><dd><ul class="simple">
+<li><p>logger: <strong>“*:logger:*:*:1.0”</strong></p></li>
+<li><p>counters: <strong>“*:counters:*:*:1.0”</strong></p></li>
+<li><p>discovery: <strong>“*:discovery:*:*:1.0”</strong> (for the connection resolver)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>references</strong> – an IReferences object, containing references to a logger, counters, and a connection resolver.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pip_services3_grpc.services.GrpcService.GrpcService.unset_references">
+<code class="sig-name descname">unset_references</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.unset_references" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unsets (clears) previously set references to dependent components.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pip_services3_grpc.services.IRegisterable.html" class="btn btn-neutral float-right" title="pip_services3_grpc.services.IRegisterable module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pip_services3_grpc.services.GrpcEndpoint.html" class="btn btn-neutral float-left" title="pip_services3_grpc.services.GrpcEndpoint module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Sergey Seroukhov
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
