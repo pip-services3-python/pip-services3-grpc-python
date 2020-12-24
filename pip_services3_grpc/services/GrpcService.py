@@ -29,21 +29,19 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
     Abstract service that receives remove calls via GRPC protocol.
 
     ### Configuration parameters ###
-
-    - dependencies:
-      - endpoint:              override for GRPC Endpoint dependency
-      - controller:            override for Controller dependency
-    - connection(s):
-      - discovery_key:         (optional) a key to retrieve the connection from [[https://rawgit.com/pip-services-node/pip-services3-components-node/master/doc/api/interfaces/connect.idiscovery.html IDiscovery]]
-      - protocol:              connection protocol: http or https
-      - host:                  host name or IP address
-      - port:                  port number
-      - uri:                   resource URI or connection string with all parameters in it
-    - credential - the HTTPS credentials:
-      - ssl_key_file:         the SSL private key in PEM
-      - ssl_crt_file:         the SSL certificate in PEM
-      - ssl_ca_file:          the certificate authorities (root cerfiticates) in PEM
-
+        - dependencies:
+          - endpoint:              override for GRPC Endpoint dependency
+          - controller:            override for Controller dependency
+        - connection(s):
+          - discovery_key:         (optional) a key to retrieve the connection from :class:`IDiscovery`
+          - protocol:              connection protocol: http or https
+          - host:                  host name or IP address
+          - port:                  port number
+          - uri:                   resource URI or connection string with all parameters in it
+        - credential - the HTTPS credentials:
+          - ssl_key_file:         the SSL private key in PEM
+          - ssl_crt_file:         the SSL certificate in PEM
+          - ssl_ca_file:          the certificate authorities (root cerfiticates) in PEM
 
 
     ### Example ###
@@ -90,13 +88,13 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
     def set_references(self, references):
         """
         Sets references to this endpoint's logger, counters, and connection resolver.
-        __References:__
-        - logger: <code>"\*:logger:\*:\*:1.0"</code>
-        - counters: <code>"\*:counters:\*:\*:1.0"</code>
-        - discovery: <code>"\*:discovery:\*:\*:1.0"</code> (for the connection resolver)
+        
+        ### References ###
+            - logger: **"\*:logger:\*:\*:1.0"**
+            - counters: **"\*:counters:\*:\*:1.0"**
+            - discovery: **"\*:discovery:\*:\*:1.0"** (for the connection resolver)
 
-        :param references: an IReferences object, containing references to a logger, counters,
-                           and a connection resolver.
+        :param references: an IReferences object, containing references to a logger, counters, and a connection resolver.
         """
         self._logger.set_references(references)
         self._counters.set_references(references)

@@ -16,26 +16,25 @@ class CommandableGrpcClient(GrpcClient):
     """
     Abstract client that calls commandable GRPC service.
 
-    Commandable services are generated automatically for [[link]]
+    Commandable services are generated automatically for :func:`link`
     Each command is exposed as Invoke method that receives all parameters as args.
 
     ### Configuration parameters ###
-    - connection(s):
-      - discovery_key:         (optional) a key to retrieve the connection from [IDiscovery]
-      - protocol:              connection protocol: http or https
-      - host:                  host name or IP address
-      - port:                  port number
-      - uri:                   resource URI or connection string with all parameters in it
-    - options:
-      - retries:               number of retries (default: 3)
-      - connect_timeout:       connection timeout in milliseconds (default: 10 sec)
-      - timeout:               invocation timeout in milliseconds (default: 10 sec)
+        - connection(s):
+          - discovery_key:         (optional) a key to retrieve the connection from :class:`IDiscovery`
+          - protocol:              connection protocol: http or https
+          - host:                  host name or IP address
+          - port:                  port number
+          - uri:                   resource URI or connection string with all parameters in it
+        - options:
+          - retries:               number of retries (default: 3)
+          - connect_timeout:       connection timeout in milliseconds (default: 10 sec)
+          - timeout:               invocation timeout in milliseconds (default: 10 sec)
 
     ### References ###
-
-    - *:logger:*:*:1.0         (optional) [ILogger] components to pass log messages
-    - *:counters:*:*:1.0         (optional) [ICounters] components to pass collected measurements
-    - *:discovery:*:*:1.0        (optional) [IDiscovery] services to resolve connection
+        - *:logger:*:*:1.0         (optional) :class:`ILogger` components to pass log messages
+        - *:counters:*:*:1.0         (optional) :class:`ICounters` components to pass collected measurements
+        - *:discovery:*:*:1.0        (optional) :class:`IDiscovery` services to resolve connection
 
     TODO: description
     """
