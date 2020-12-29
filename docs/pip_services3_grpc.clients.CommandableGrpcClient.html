@@ -29,6 +29,7 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -179,7 +180,7 @@ Each command is exposed as Invoke method that receives all parameters as args.</
 <dl class="simple">
 <dt>### Configuration parameters ###</dt><dd><ul class="simple">
 <li><p>connection(s):
-- discovery_key:         (optional) a key to retrieve the connection from <code class="xref py py-class docutils literal notranslate"><span class="pre">IDiscovery</span></code>
+- discovery_key:         (optional) a key to retrieve the connection from <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-components-python/pip_services3_components.connect.IDiscovery.html#pip_services3_components.connect.IDiscovery.IDiscovery" title="(in pip-services3-components)"><code class="xref py py-class docutils literal notranslate"><span class="pre">IDiscovery</span></code></a>
 - protocol:              connection protocol: http or https
 - host:                  host name or IP address
 - port:                  port number
@@ -191,9 +192,9 @@ Each command is exposed as Invoke method that receives all parameters as args.</
 </ul>
 </dd>
 <dt>### References ###</dt><dd><ul class="simple">
-<li><p><em>:logger:</em>:<a href="#id1"><span class="problematic" id="id2">*</span></a>:1.0         (optional) <code class="xref py py-class docutils literal notranslate"><span class="pre">ILogger</span></code> components to pass log messages</p></li>
-<li><p><em>:counters:</em>:<a href="#id3"><span class="problematic" id="id4">*</span></a>:1.0         (optional) <code class="xref py py-class docutils literal notranslate"><span class="pre">ICounters</span></code> components to pass collected measurements</p></li>
-<li><p><em>:discovery:</em>:<a href="#id5"><span class="problematic" id="id6">*</span></a>:1.0        (optional) <code class="xref py py-class docutils literal notranslate"><span class="pre">IDiscovery</span></code> services to resolve connection</p></li>
+<li><p><em>:logger:</em>:<a href="#id1"><span class="problematic" id="id2">*</span></a>:1.0           (optional) <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-components-python/pip_services3_components.log.ILogger.html#pip_services3_components.log.ILogger.ILogger" title="(in pip-services3-components)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ILogger</span></code></a> components to pass log messages</p></li>
+<li><p><em>:counters:</em>:<a href="#id3"><span class="problematic" id="id4">*</span></a>:1.0         (optional) <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-components-python/pip_services3_components.count.ICounters.html#pip_services3_components.count.ICounters.ICounters" title="(in pip-services3-components)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ICounters</span></code></a> components to pass collected measurements</p></li>
+<li><p><em>:discovery:</em>:<a href="#id5"><span class="problematic" id="id6">*</span></a>:1.0        (optional) <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-components-python/pip_services3_components.connect.IDiscovery.html#pip_services3_components.connect.IDiscovery.IDiscovery" title="(in pip-services3-components)"><code class="xref py py-class docutils literal notranslate"><span class="pre">IDiscovery</span></code></a> services to resolve connection</p></li>
 </ul>
 </dd>
 </dl>

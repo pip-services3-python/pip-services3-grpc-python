@@ -33,7 +33,7 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
           - endpoint:              override for GRPC Endpoint dependency
           - controller:            override for Controller dependency
         - connection(s):
-          - discovery_key:         (optional) a key to retrieve the connection from :class:`IDiscovery`
+          - discovery_key:         (optional) a key to retrieve the connection from :class:`IDiscovery <pip_services3_components.connect.IDiscovery.IDiscovery>`
           - protocol:              connection protocol: http or https
           - host:                  host name or IP address
           - port:                  port number
