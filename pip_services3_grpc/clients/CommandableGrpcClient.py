@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import json
+from typing import Any, Optional
+
+from pip_services3_commons.errors.ApplicationException import ApplicationException
+from pip_services3_commons.errors.ApplicationExceptionFactory import ApplicationExceptionFactory
+from pip_services3_commons.errors.ErrorDescription import ErrorDescription
 
 from .GrpcClient import GrpcClient
-
 from ..protos import commandable_pb2
 from ..protos import commandable_pb2_grpc
-
-from pip_services3_commons.errors.ApplicationExceptionFactory import ApplicationExceptionFactory
-from pip_services3_commons.errors.ApplicationException import ApplicationException
-from pip_services3_commons.errors.ErrorDescription import ErrorDescription
 
 
 class CommandableGrpcClient(GrpcClient):
     """
     Abstract client that calls commandable GRPC service.
 
-    Commandable services are generated automatically for :func:`link`
+    Commandable services are generated automatically for :class:`ICommandable <pip_services3_commons.commands.ICommandable.ICommandable>`.
     Each command is exposed as Invoke method that receives all parameters as args.
 
     ### Configuration parameters ###
@@ -36,26 +36,41 @@ class CommandableGrpcClient(GrpcClient):
         - `*:counters:*:*:1.0`         (optional) :class:`ICounters <pip_services3_components.count.ICounters.ICounters>` components to pass collected measurements
         - `*:discovery:*:*:1.0`        (optional) :class:`IDiscovery <pip_services3_components.connect.IDiscovery.IDiscovery>` services to resolve connection
 
-    TODO: description
+    .. code-block:: python
+
+        class MyCommandableGrpcClient(CommandableGrpcClient, IMyClient):
+            ...
+            def get_data(self, correlation_id, id):
+
+                return self.call_command(
+                            "get_data",
+                            correlation_id,
+                            { 'id': id }
+                        )
+
+        client = new MyCommandableGrpcClient()
+        client.configure(ConfigParams.from_tuples(
+            "connection.protocol", "http",
+            "connection.host", "localhost",
+            "connection.port", 8080
+        ))
+        result = client.get_data("123", "1")
+
     """
 
-    # The service name
-    __service_name = None
-
-    # Instanco of client
-    __client = None
-
-    def __init__(self, name):
+    def __init__(self, name: str):
         """
         Creates a new instance of the client.
 
         :param name: a service name.
         """
         super().__init__('commandable.Commandable')
-        self.__service_name = name
+        # The service name
+        self._name = name
+        # Instance of client
         self.__client = commandable_pb2_grpc.CommandableStub
 
-    def call_command(self, name, correlation_id, params):
+    def call_command(self, name: str, correlation_id: Optional[str], params: Any) -> Any:
         """
         Calls a remote method via GRPC commadable protocol.
         The call is made via Invoke method and all parameters are sent in args object.
@@ -67,7 +82,7 @@ class CommandableGrpcClient(GrpcClient):
         :return: Future that receives result
         """
 
-        method = self.__service_name + '.' + name
+        method = self._name + '.' + name
         timing = self._instrument(correlation_id, method)
 
         request = commandable_pb2.InvokeRequest()
@@ -83,7 +98,7 @@ class CommandableGrpcClient(GrpcClient):
         request.args_json = json.dumps(params) if params is not None else ''
 
         try:
-            response = self.call('invoke', self.__client, request)
+            response = self.call('invoke', self.__client, request).result()
             timing.end_timing()
             # Handle error response
             if response.error is not None and response.error.code != '':

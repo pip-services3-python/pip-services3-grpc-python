@@ -177,7 +177,7 @@
 <span id="pip-services3-grpc-services-grpcservice-module"></span><h1>pip_services3_grpc.services.GrpcService module<a class="headerlink" href="#module-pip_services3_grpc.services.GrpcService" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="pip_services3_grpc.services.GrpcService.GrpcService">
-<em class="property">class </em><code class="sig-prename descclassname">pip_services3_grpc.services.GrpcService.</code><code class="sig-name descname">GrpcService</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">service_name</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pip_services3_grpc.services.GrpcService.</code><code class="sig-name descname">GrpcService</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">service_name</span><span class="p">:</span> <span class="n"><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.run.IOpenable.html#pip_services3_commons.run.IOpenable.IOpenable" title="(in pip-services3-commons)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_commons.run.IOpenable.IOpenable</span></code></a>, <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.config.IConfigurable.html#pip_services3_commons.config.IConfigurable.IConfigurable" title="(in pip-services3-commons)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_commons.config.IConfigurable.IConfigurable</span></code></a>, <a class="reference internal" href="pip_services3_grpc.services.IRegisterable.html#pip_services3_grpc.services.IRegisterable.IRegisterable" title="pip_services3_grpc.services.IRegisterable.IRegisterable"><code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_grpc.services.IRegisterable.IRegisterable</span></code></a>, <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.refer.IUnreferenceable.html#pip_services3_commons.refer.IUnreferenceable.IUnreferenceable" title="(in pip-services3-commons)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_commons.refer.IUnreferenceable.IUnreferenceable</span></code></a></p>
 <p>Abstract service that receives remove calls via GRPC protocol.</p>
 <dl class="simple">
@@ -197,33 +197,69 @@
 - ssl_ca_file:          the certificate authorities (root cerfiticates) in PEM</p></li>
 </ul>
 </dd>
-<dt>### Example ###</dt><dd><p>TODO!!!</p>
-</dd>
 </dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyGrpcService</span><span class="p">(</span><span class="n">GrpcService</span><span class="p">):</span>
+    <span class="n">__controller</span><span class="p">:</span> <span class="n">IMyController</span>
+    <span class="o">...</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">suoer</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;... path to proto ...&#39;</span><span class="p">,</span> <span class="s1">&#39;.. service name ...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dependency_resolver</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+            <span class="s2">&quot;controller&quot;</span><span class="p">,</span>
+            <span class="n">Descriptor</span><span class="p">(</span><span class="s2">&quot;mygroup&quot;</span><span class="p">,</span><span class="s2">&quot;controller&quot;</span><span class="p">,</span><span class="s2">&quot;*&quot;</span><span class="p">,</span><span class="s2">&quot;*&quot;</span><span class="p">,</span><span class="s2">&quot;1.0&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">set_references</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">references</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_references</span><span class="p">(</span><span class="n">references</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span> <span class="o">=</span> <span class="n">this</span><span class="o">.</span><span class="n">_dependency_resolver</span><span class="o">.</span><span class="n">get_required</span><span class="p">(</span><span class="s2">&quot;controller&quot;</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="n">correlation_id</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">getted_method</span><span class="p">):</span>
+            <span class="n">correlationId</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">correlationId</span><span class="p">;</span>
+            <span class="nb">id</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">getMyData</span><span class="p">(</span><span class="n">correlationId</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">callback</span><span class="p">);</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_commadable_method</span><span class="p">(</span><span class="s2">&quot;get_mydata&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+        <span class="o">...</span>
+
+
+
+<span class="n">service</span> <span class="o">=</span> <span class="n">MyGrpcService</span><span class="p">()</span>
+<span class="n">service</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">ConfigParams</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">(</span>
+    <span class="s2">&quot;connection.protocol&quot;</span><span class="p">,</span> <span class="s2">&quot;http&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;connection.host&quot;</span><span class="p">,</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;connection.port&quot;</span><span class="p">,</span> <span class="mi">8080</span>
+<span class="p">))</span>
+
+<span class="n">service</span><span class="o">.</span><span class="n">set_references</span><span class="p">(</span><span class="n">References</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">(</span>
+   <span class="n">Descriptor</span><span class="p">(</span><span class="s2">&quot;mygroup&quot;</span><span class="p">,</span><span class="s2">&quot;controller&quot;</span><span class="p">,</span><span class="s2">&quot;default&quot;</span><span class="p">,</span><span class="s2">&quot;default&quot;</span><span class="p">,</span><span class="s2">&quot;1.0&quot;</span><span class="p">),</span> <span class="n">controller</span>
+<span class="p">))</span>
+
+<span class="n">service</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;123&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcService.GrpcService.close">
-<code class="sig-name descname">close</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.close" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Closes component and frees used resources.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>correlation_id</strong> – (optional) transaction id to trace execution through call chain.</p></li>
-<li><p><strong>callback</strong> – callback function that receives error or null no errors occured.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>correlation_id</strong> – (optional) transaction id to trace execution through call chain.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcService.GrpcService.configure">
-<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.configure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.config.ConfigParams.html#pip_services3_commons.config.ConfigParams.ConfigParams" title="(in pip-services3-commons)">pip_services3_commons.config.ConfigParams.ConfigParams</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configures component by passing configuration parameters.
 :param config: configuration parameters to be set.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcService.GrpcService.is_open">
-<code class="sig-name descname">is_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.is_open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="http://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.is_open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if the component is opened.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -234,21 +270,18 @@
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcService.GrpcService.open">
-<code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens the component.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>correlation_id</strong> – (optional) transaction id to trace execution through call chain.</p></li>
-<li><p><strong>callback</strong> – callback function that receives error or null no errors occured.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>correlation_id</strong> – (optional) transaction id to trace execution through call chain.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcService.GrpcService.register">
-<code class="sig-name descname">register</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.register" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">register</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers all service routes in Grpc endpoint.
 This method is called by the service and must be overriden
 in child classes.</p>
@@ -256,12 +289,22 @@ in child classes.</p>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcService.GrpcService.register_commadable_method">
-<code class="sig-name descname">register_commadable_method</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">schema</span></em>, <em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.register_commadable_method" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname">register_commadable_method</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n"><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em>, <em class="sig-param"><span class="n">schema</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.validate.Schema.html#pip_services3_commons.validate.Schema.Schema" title="(in pip-services3-commons)">pip_services3_commons.validate.Schema.Schema</a></span></em>, <em class="sig-param"><span class="n">action</span><span class="p">:</span> <span class="n">Callable<span class="p">[</span><span class="p">[</span>Optional<span class="p">[</span><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span><span class="p">, </span>Optional<span class="p">[</span><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span><span class="p">, </span><a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.run.Parameters.html#pip_services3_commons.run.Parameters.Parameters" title="(in pip-services3-commons)">pip_services3_commons.run.Parameters.Parameters</a><span class="p">]</span><span class="p">, </span><a class="reference external" href="http://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.register_commadable_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a commandable method in this objects GRPC server (service) by the given name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> – the GRPC method name.</p></li>
+<li><p><strong>schema</strong> – the schema to use for parameter validation.</p></li>
+<li><p><strong>action</strong> – the action to perform at the given route.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcService.GrpcService.set_references">
-<code class="sig-name descname">set_references</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">references</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.set_references" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_references</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">references</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.refer.IReferences.html#pip_services3_commons.refer.IReferences.IReferences" title="(in pip-services3-commons)">pip_services3_commons.refer.IReferences.IReferences</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcService.GrpcService.set_references" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets references to this endpoint’s logger, counters, and connection resolver.</p>
 <dl class="simple">
 <dt>### References ###</dt><dd><ul class="simple">

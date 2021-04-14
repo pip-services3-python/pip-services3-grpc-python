@@ -1,24 +1,20 @@
 # -*- coding: utf-8 -*-
-
 from concurrent import futures
+from concurrent.futures import Future
+from typing import Optional, Any
+
 import grpc
-
-from pip_services3_commons.run.IOpenable import IOpenable
-from pip_services3_commons.config.IConfigurable import IConfigurable
-from pip_services3_commons.refer.IReferences import IReferences
-from pip_services3_commons.refer.IReferenceable import IReferenceable
 from pip_services3_commons.config.ConfigParams import ConfigParams
-from pip_services3_components.log.CompositeLogger import CompositeLogger
-from pip_services3_components.count.Timing import Timing
-from pip_services3_components.count.CompositeCounters import CompositeCounters
-from pip_services3_commons.errors.ConnectionException import ConnectionException
-from pip_services3_rpc.connect.HttpConnectionResolver import HttpConnectionResolver
+from pip_services3_commons.config.IConfigurable import IConfigurable
 from pip_services3_commons.data.StringValueMap import StringValueMap
-from pip_services3_commons.data.FilterParams import FilterParams
-from pip_services3_commons.data.PagingParams import PagingParams
-
-from ..protos import commandable_pb2
-from ..protos import commandable_pb2_grpc
+from pip_services3_commons.errors.ConnectionException import ConnectionException
+from pip_services3_commons.refer import IReferences
+from pip_services3_commons.refer.IReferenceable import IReferenceable
+from pip_services3_commons.run.IOpenable import IOpenable
+from pip_services3_components.count import CounterTiming
+from pip_services3_components.count.CompositeCounters import CompositeCounters
+from pip_services3_components.log.CompositeLogger import CompositeLogger
+from pip_services3_rpc.connect.HttpConnectionResolver import HttpConnectionResolver
 
 
 class GrpcClient(IOpenable, IReferenceable, IConfigurable):
@@ -36,7 +32,25 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
           - retries:               number of retries (default: 3)
           - connect_timeout:       connection timeout in milliseconds (default: 10 sec)
           - timeout:               invocation timeout in milliseconds (default: 10 sec)
-    # TODO description
+
+    .. code-block:: python
+
+        class MyGrpcClient(GrpcClient, IMyClient):
+            ...
+            def get_data(self, correlation_id, id ):
+                timing = self.instrument(correlation_id, 'myclient.get_data')
+                result = self.call("get_data", correlation_id, { id: id })
+                timing.end_timing()
+                return result
+            ...
+
+        client = MyGrpcClient()
+        client.configure(ConfigParams.from_tuples(
+            "connection.protocol", "http",
+            "connection.host", "localhost",
+            "connection.port", 8080
+        ))
+        result = client.get_data("123", "1")
     """
 
     _default_config = ConfigParams.from_tuples(
@@ -51,74 +65,79 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
         "options.debug", True
     )
 
-    __client = None
-    __client_name = None
+    def __init__(self, client_name: str):
+        """
+        Creates a new instance of the client.
 
-    # The GRPC client chanel
-    __channel = None
+        :param client_name: a client name.
+        """
+        self.__client = None
+        self.__client_name = None
 
-    # The connection resolver.
-    __connetction_resolver = HttpConnectionResolver()
+        # The GRPC client channel
+        self._channel = None
 
-    # The logger.
-    __logger = CompositeLogger()
+        # The connection resolver.
+        self._connection_resolver = HttpConnectionResolver()
 
-    # The performance counters.
-    __counters = CompositeCounters()
+        # The logger.
+        self._logger = CompositeLogger()
 
-    # The configuration options.
-    __options = ConfigParams()
+        # The performance counters.
+        self._counters = CompositeCounters()
 
-    # The connection timeout in milliseconds.
-    __connection_timeout = 100000
+        # The configuration options.
+        self._options = ConfigParams()
 
-    # The invocation timeout in milliseconds.
-    __timeout = 100000
+        # The connection timeout in milliseconds.
+        self._connection_timeout = 100000
 
-    # The remote service uri which is calculated on open.
-    __uri = None
+        # The invocation timeout in milliseconds.
+        self._timeout = 100000
 
-    def __init__(self, client_name):
+        # The remote service uri which is calculated on open.
+        self._uri: str = None
+
         self.__client_name = client_name
 
-    def configure(self, config):
+    def configure(self, config: ConfigParams):
         """
         Configures component by passing configuration parameters.
 
         :param config: configuration parameters to be set.
         """
         config = config.set_defaults(GrpcClient._default_config)
-        self.__connetction_resolver.configure(config)
-        self.__options = self.__options.override(config.get_section('options'))
+        self._connection_resolver.configure(config)
+        self._options = self._options.override(config.get_section('options'))
 
-        self.__connection_timeout = config.get_as_integer_with_default('options.connect_timeout',
-                                                                       self.__connection_timeout)
-        self.__timeout = config.get_as_integer_with_default('options.timeout', self.__timeout)
+        self._connection_timeout = config.get_as_integer_with_default('options.connect_timeout',
+                                                                      self._connection_timeout)
+        self._timeout = config.get_as_integer_with_default('options.timeout', self._timeout)
 
-    def set_references(self, references):
+    def set_references(self, references: IReferences):
         """
         Sets references to dependent components.
 
         :param references: references to locate the component dependencies.
         """
-        self.__logger.set_references(references)
-        self.__counters.set_references(references)
-        self.__connetction_resolver.set_references(references)
+        self._logger.set_references(references)
+        self._counters.set_references(references)
+        self._connection_resolver.set_references(references)
 
-    def _instrument(self, correlation_id, name):
+    def _instrument(self, correlation_id: Optional[str], name: str) -> CounterTiming:
         """
         Adds instrumentation to log calls and measure call time.
-        It returns a Timing object that is used to end the time measurement.
+        It returns a CounterTiming object that is used to end the time measurement.
 
         :param correlation_id: (optional) transaction id to trace execution through call chain.
         :param name: a method name.
-        :return: Timing object to end the time measurement.
+        :return: CounterTiming object to end the time measurement.
         """
-        self.__logger.trace(correlation_id, 'Executing {} method'.format(name))
-        self.__counters.increment_one(name + '.call_count')
-        return self.__counters.begin_timing(name + '.call_time')
+        self._logger.trace(correlation_id, 'Executing {} method'.format(name))
+        self._counters.increment_one(name + '.call_count')
+        return self._counters.begin_timing(name + '.call_time')
 
-    def _instrument_error(self, correlation_id, name, err, reerror=False):
+    def _instrument_error(self, correlation_id: Optional[str], name: str, err: Exception, reerror=False):
         """
         Adds instrumentation to error handling.
 
@@ -128,90 +147,89 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
         :param reerror: if true - throw error
         """
         if err is not None:
-            self.__logger.error(correlation_id, err, 'Failed to call {} method'.format(name))
-            self.__counters.increment_one(name + '.call_errors')
+            self._logger.error(correlation_id, err, 'Failed to call {} method'.format(name))
+            self._counters.increment_one(name + '.call_errors')
             if reerror is not None and reerror is True:
                 raise err
 
-    def is_open(self):
+    def is_open(self) -> bool:
         """
         Checks if the component is opened.
 
         :return: Returns true if the component has been opened and false otherwise.
         """
-        return self.__channel is not None
+        return self._channel is not None
 
-    def open(self, correlation_id):
+    def open(self, correlation_id: Optional[str]):
         """
         Opens the component.
 
         :param correlation_id: (optional) transaction id to trace execution through call chain.
-        :return: Future that receives error or null no errors occured.
         """
         if self.is_open():
             return None
 
         try:
-            connection = self.__connetction_resolver.resolve(correlation_id)
-            self.__uri = connection.get_uri()
+            connection = self._connection_resolver.resolve(correlation_id)
+            self._uri = connection.get_as_string('uri')
 
-            options = [('grpc.max_connection_idle_ms', self.__connection_timeout),
-                       ('grpc.client_idle_timeout_ms', self.__timeout)]
+            options = [('grpc.max_connection_idle_ms', self._connection_timeout),
+                       ('grpc.client_idle_timeout_ms', self._timeout)]
 
-            if connection.get_protocol('http') == 'https':
+            if connection.get_as_string_with_default('protocol', 'http') == 'https':
                 ssl_ca_file = connection.get_as_nullable_string('ssl_ca_file')
                 with open(ssl_ca_file, 'rb') as file:
                     trusted_root = file.read()
                 credentials = grpc.ssl_channel_credentials(trusted_root)
-                channel = grpc.secure_channel(str(connection.get_host()) + ':' +
-                                              str(connection.get_port()), credentials=credentials, options=options)
+                channel = grpc.secure_channel(str(connection.get_as_string('host')) + ':' +
+                                              str(connection.get_as_string('port')), credentials=credentials,
+                                              options=options)
             else:
-                channel = grpc.insecure_channel(str(connection.get_host()) + ':' +
-                                                str(connection.get_port()), options=options)
-            self.__channel = channel
+                channel = grpc.insecure_channel(str(connection.get_as_string('host')) + ':' +
+                                                str(connection.get_as_string('port')), options=options)
+            self._channel = channel
 
         except Exception as ex:
             raise ConnectionException(
                 correlation_id, 'CANNOT_CONNECT', 'Opening GRPC client failed'
-            ).wrap(ex).with_details('url', self.__uri)
+            ).wrap(ex).with_details('url', self._uri)
 
-    def close(self, correlation_id):
+    def close(self, correlation_id: Optional[str]):
         """
         Closes component and frees used resources.
 
         :param correlation_id: (optional) transaction id to trace execution through call chain.
-        :return: Future that receives error or null no errors occured.
         """
-        if self.__channel is not None:
+        if self._channel is not None:
             # Eat exceptions
             try:
-                self.__logger.debug(correlation_id, 'Closed GRPC service at {}'.format(self.__uri))
+                self._logger.debug(correlation_id, 'Closed GRPC service at {}'.format(self._uri))
             except Exception as ex:
-                self.__logger.warn(correlation_id, 'Failed while closing GRPC service: {}'.format(ex))
+                self._logger.warn(correlation_id, 'Failed while closing GRPC service: {}'.format(ex))
             # if self.__client is not None:
             #     self.__client = None
-            self.__channel.close()
-            self.__channel = None
-            self.__uri = None
-            GrpcClient.__connetction_resolver = HttpConnectionResolver()
+            self._channel.close()
+            self._channel = None
+            self._uri = None
+            GrpcClient._connection_resolver = HttpConnectionResolver()
 
-    def call(self, method, client, request):
+    def call(self, method: str, client: Any, request: Any) -> Future:
         """
         Calls a remote method via GRPC protocol.
 
+        :param method: name of the calling method
         :param client: current client
         :param request: (optional) request object.
-        :return: (optional) Future that receives result object or error.
+        :return: (optional) future that receives result object or error.
         """
 
-        client = client(self.__channel)
+        client = client(self._channel)
         executor = futures.ThreadPoolExecutor(max_workers=1)
-        response = executor.submit(client.__dict__[method], request).result()
-        # TODO: check this realization
+        response = executor.submit(client.__dict__[method], request)
 
         return response
 
-    def add_filter_params(self, params, filter):
+    def _add_filter_params(self, params: Any, filter: Any) -> Any:
         """
         AddFilterParams method are adds filter parameters (with the same name as they defined)
         to invocation parameter map.
@@ -228,9 +246,10 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
 
         return params
 
-    def add_paging_params(self, params, paging):
+    def _add_paging_params(self, params: Any, paging: Any) -> Any:
         """
         AddPagingParams method are adds paging parameters (skip, take, total) to invocation parameter map.
+
         :param params: invocation parameters.
         :param paging: (optional) paging parameters
         :return: invocation parameters with added paging parameters.

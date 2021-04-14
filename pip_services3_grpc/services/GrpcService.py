@@ -1,27 +1,22 @@
 # -*- coding: utf-8 -*-
+from abc import abstractmethod
+from typing import List, Any, Optional, Callable
 
-from abc import ABC
-import grpc
-
-from pip_services3_commons.refer import DependencyResolver
-from pip_services3_commons.run.IOpenable import IOpenable
-from pip_services3_commons.refer.IReferences import IReferences
-from pip_services3_commons.errors.InvalidStateException import InvalidStateException
-from pip_services3_commons.config.IConfigurable import IConfigurable
-from pip_services3_commons.refer.IUnreferenceable import IUnreferenceable
-from pip_services3_commons.refer.IReferenceable import IReferenceable
 from pip_services3_commons.config.ConfigParams import ConfigParams
+from pip_services3_commons.config.IConfigurable import IConfigurable
+from pip_services3_commons.errors.InvalidStateException import InvalidStateException
 from pip_services3_commons.refer.DependencyResolver import DependencyResolver
-from pip_services3_components.log.CompositeLogger import CompositeLogger
+from pip_services3_commons.refer.IReferences import IReferences
+from pip_services3_commons.refer.IUnreferenceable import IUnreferenceable
+from pip_services3_commons.run import Parameters
+from pip_services3_commons.run.IOpenable import IOpenable
+from pip_services3_commons.validate import Schema
+from pip_services3_components.count import CounterTiming
 from pip_services3_components.count.CompositeCounters import CompositeCounters
-from pip_services3_components.count.Timing import Timing
-from pip_services3_commons.validate.Schema import Schema
+from pip_services3_components.log.CompositeLogger import CompositeLogger
 
 from .GrpcEndpoint import GrpcEndpoint
 from .IRegisterable import IRegisterable
-
-import pip_services3_grpc.protos.commandable_pb2_grpc as commandable_pb2_grpc
-import pip_services3_grpc.protos.commandable_pb2 as commandable_pb2
 
 
 class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
@@ -44,38 +39,81 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
           - ssl_ca_file:          the certificate authorities (root cerfiticates) in PEM
 
 
-    ### Example ###
-        TODO!!!
+    .. code-block:: python
+
+        class MyGrpcService(GrpcService):
+            __controller: IMyController
+            ...
+            def __init__(self):
+                suoer().__init__('... path to proto ...', '.. service name ...')
+                self._dependency_resolver.put(
+                    "controller",
+                    Descriptor("mygroup","controller","*","*","1.0")
+                )
+
+
+            def set_references(self, references):
+                super().set_references(references)
+                self._controller = this._dependency_resolver.get_required("controller")
+
+
+            def register(self):
+                def method(correlation_id, args, getted_method):
+                    correlationId = call.request.correlationId;
+                    id = call.request.id;
+                    self._controller.getMyData(correlationId, id, callback);
+
+                self.register_commadable_method("get_mydata", None, method)
+                ...
+
+
+
+        service = MyGrpcService()
+        service.configure(ConfigParams.from_tuples(
+            "connection.protocol", "http",
+            "connection.host", "localhost",
+            "connection.port", 8080
+        ))
+
+        service.set_references(References.from_tuples(
+           Descriptor("mygroup","controller","default","default","1.0"), controller
+        ))
+
+        service.open("123")
 
     """
 
     __default_config = ConfigParams.from_tuples("dependencies.endpoint", "*:endpoint:grpc:*:1.0")
-    __service_name = None
-    __config = None
-    __references = None
-    __local_endpoint = None
-    __registrable = None
-    __implementation = {}
-    __interceptors = []
-    __opened = None
 
-    # The GRPC endpoint that exposes this service.
-    _endpoint = None
+    def __init__(self, service_name: str = None):
+        """
+        Creates a new instance of the service.
 
-    # The dependency resolver.
-    _dependency_resolver = DependencyResolver(__default_config)
+        :param service_name: a service name.
+        """
+        self.__config: ConfigParams = None
+        self.__references: IReferences = None
+        self.__local_endpoint: bool = None
+        self.__implementation: Any = {}
+        self.__interceptors: List[Any] = []
+        self.__opened: bool = None
 
-    # The logger.
-    _logger = CompositeLogger()
+        # The GRPC endpoint that exposes this service.
+        self._endpoint: GrpcEndpoint = None
 
-    # The performance counters.
-    _counters = CompositeCounters()
+        # The dependency resolver.
+        self._dependency_resolver = DependencyResolver(GrpcService.__default_config)
 
-    def __init__(self, service_name=None):
+        # The logger.
+        self._logger = CompositeLogger()
+
+        # The performance counters.
+        self._counters = CompositeCounters()
+
         self.__service_name = service_name
-        self.__registrable = lambda: self._register_service()
+        self.__registrable = lambda implementation: self._register_service(implementation)
 
-    def configure(self, config):
+    def configure(self, config: ConfigParams):
         """
         Configures component by passing configuration parameters.
         :param config: configuration parameters to be set.
@@ -85,7 +123,7 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
         self.__config = config
         self._dependency_resolver.configure(config)
 
-    def set_references(self, references):
+    def set_references(self, references: IReferences):
         """
         Sets references to this endpoint's logger, counters, and connection resolver.
         
@@ -122,7 +160,7 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
             self._endpoint.unregister(self.__registrable)
             self._endpoint = None
 
-    def __create_endpoint(self):
+    def __create_endpoint(self) -> GrpcEndpoint:
         endpoint = GrpcEndpoint()
 
         if self.__config:
@@ -132,28 +170,36 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
 
         return endpoint
 
-    def _instrument(self, correlation_id, name):
+    def _instrument(self, correlation_id: Optional[str], name: str) -> CounterTiming:
         """
         Adds instrumentation to log calls and measure call time.
-        It returns a Timing object that is used to end the time measurement.
+        It returns a CounterTiming object that is used to end the time measurement.
 
         :param correlation_id: (optional) transaction id to trace execution through call chain.
         :param name: a method name.
-        :return: Timing object to end the time measurement.
+        :return: CounterTiming object to end the time measurement.
         """
         self._logger.trace(correlation_id, 'Executing {} method'.format(name))
         self._counters.increment_one(name + '.exec_time')
         return self._counters.begin_timing(name + '.exec_time')
 
-    def _instrument_error(self, correlation_id, name, err, reerror=False):
+    def _instrument_error(self, correlation_id: Optional[str], name: str, err: Exception, reerror=False):
+        """
+        Adds instrumentation to error handling.
+
+        :param correlation_id: (optional) transaction id to trace execution through call chain.
+        :param name: a method name.
+        :param err: an occured error
+        :param reerror: if true - throw error
+        """
         if err is not None:
             self._logger.error(correlation_id, err, 'Failed to execute {} method'.format(name))
             self._counters.increment_one(name + '.exec_errors')
 
         if reerror:
-            raise reerror
+            raise err
 
-    def is_open(self):
+    def is_open(self) -> bool:
         """
         Checks if the component is opened.
 
@@ -161,12 +207,11 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
         """
         return self.__opened
 
-    def open(self, correlation_id):
+    def open(self, correlation_id: Optional[str]):
         """
         Opens the component.
 
         :param correlation_id: (optional) transaction id to trace execution through call chain.
-        :param callback: callback function that receives error or null no errors occured.
         """
         # TODO maybe need add async
 
@@ -188,12 +233,11 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
         else:
             self.__opened = True
 
-    def close(self, correlation_id):
+    def close(self, correlation_id: Optional[str]):
         """
         Closes component and frees used resources.
 
         :param correlation_id: (optional) transaction id to trace execution through call chain.
-        :param callback: callback function that receives error or null no errors occured.
         """
         if not self.__opened:
             return None
@@ -206,19 +250,33 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
 
         self.__opened = False
 
-    def register_commadable_method(self, method, schema, action):
-        self._endpoint.register_commandable_method(method, schema, action)
+    def register_commadable_method(self, method: str, schema: Schema,
+                                   action: Callable[[Optional[str], Optional[str], Parameters], None]):
+        """
+        Registers a commandable method in this objects GRPC server (service) by the given name.
 
-    def _register_interceptor(self, action):
+        :param method: the GRPC method name.
+        :param schema: the schema to use for parameter validation.
+        :param action: the action to perform at the given route.
+        """
+        self._endpoint._register_commandable_method(method, schema, action)
+
+    def _register_interceptor(self, action: Callable):
+        """
+        Registers a middleware for methods in GRPC endpoint.
+
+        :param action: an action function that is called when middleware is invoked.
+        """
         if self._endpoint is not None:
-            self._endpoint.register_interceptor(action)
+            self._endpoint._register_interceptor(action)
 
-    def _register_service(self, implementation):
+    def _register_service(self, implementation: 'GrpcService'):
         # self.register()
 
         if self._endpoint is not None:
             self._endpoint.register_service(implementation)
 
+    @abstractmethod
     def register(self):
         """
         Registers all service routes in Grpc endpoint.

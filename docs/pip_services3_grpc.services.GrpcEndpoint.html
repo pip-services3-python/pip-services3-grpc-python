@@ -216,20 +216,32 @@ following references to the object’s <a class="reference internal" href="#pip_
 <li><p>discovery: <strong>“*:discovery:*:*:1.0”</strong> (for the connection resolver).</p></li>
 </ul>
 </div></blockquote>
-<dl class="simple">
-<dt>### Examples ###</dt><dd><p>TODO!!!</p>
-</dd>
-</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_config</span><span class="p">,</span> <span class="n">_references</span><span class="p">):</span>
+    <span class="n">endpoint</span> <span class="o">=</span> <span class="n">GrpcEndpoint</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
+        <span class="n">endpoint</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_references</span><span class="p">:</span>
+        <span class="n">endpoint</span><span class="o">.</span><span class="n">set_references</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_references</span><span class="p">)</span>
+    <span class="o">...</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">correlation_id</span><span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.close">
-<code class="sig-name descname">close</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Closes this endpoint and the GRPC server (service) that was opened earlier.
-:param correlation_id: (optional) transaction id to trace execution through call chain.</p>
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes this endpoint and the GRPC server (service) that was opened earlier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>correlation_id</strong> – (optional) transaction id to trace execution through call chain.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.configure">
-<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.configure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.config.ConfigParams.html#pip_services3_commons.config.ConfigParams.ConfigParams" title="(in pip-services3-commons)">pip_services3_commons.config.ConfigParams.ConfigParams</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configures this HttpEndpoint using the given configuration parameters.</p>
 <dl class="simple">
 <dt>### Configuration parameters ###</dt><dd><ul class="simple">
@@ -254,7 +266,7 @@ following references to the object’s <a class="reference internal" href="#pip_
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.is_open">
-<code class="sig-name descname">is_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.is_open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="http://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.is_open" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>whether or not this endpoint is open with an actively listening GRPC server.</p>
@@ -264,7 +276,7 @@ following references to the object’s <a class="reference internal" href="#pip_
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.open">
-<code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span></em>, <em class="sig-param"><span class="n">max_workers</span><span class="o">=</span><span class="default_value">15</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">max_workers</span><span class="p">:</span> <span class="n"><a class="reference external" href="http://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></span> <span class="o">=</span> <span class="default_value">15</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens a connection using the parameters resolved by the referenced connection
 resolver and creates a GRPC server (service) using the set options and parameters.</p>
 <dl class="field-list simple">
@@ -279,48 +291,29 @@ resolver and creates a GRPC server (service) using the set options and parameter
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.register">
-<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">registration</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.register" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">registration</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pip_services3_grpc.services.IRegisterable.html#pip_services3_grpc.services.IRegisterable.IRegisterable" title="pip_services3_grpc.services.IRegisterable.IRegisterable">pip_services3_grpc.services.IRegisterable.IRegisterable</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a registerable object for dynamic endpoint discovery.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>registration</strong> – the registration to add.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
 </dl>
 </dd></dl>
-
-<dl class="py method">
-<dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.register_commandable_method">
-<code class="sig-name descname">register_commandable_method</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">schema</span></em>, <em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.register_commandable_method" title="Permalink to this definition">¶</a></dt>
-<dd><p>Registers a commandable method in this objects GRPC server (service) by the given name.,</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>method</strong> – the GRPC method name.</p></li>
-<li><p><strong>schema</strong> – the schema to use for parameter validation.</p></li>
-<li><p><strong>action</strong> – the action to perform at the given route.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.register_interceptor">
-<code class="sig-name descname">register_interceptor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interceptor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.register_interceptor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.register_service">
 <code class="sig-name descname">register_service</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">service</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.register_service" title="Permalink to this definition">¶</a></dt>
-<dd><p>Registers a service with related implementation
-:param service: a GRPC service object.</p>
+<dd><p>Registers a service with related implementation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>service</strong> – a GRPC service object.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.set_references">
-<code class="sig-name descname">set_references</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">references</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.set_references" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_references</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">references</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.refer.IReferences.html#pip_services3_commons.refer.IReferences.IReferences" title="(in pip-services3-commons)">pip_services3_commons.refer.IReferences.IReferences</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.set_references" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets references to this endpoint’s logger, counters, and connection resolver.</p>
 <p>__References:__
 - logger: <strong>“*:logger:*:*:1.0”</strong>
@@ -335,7 +328,7 @@ resolver and creates a GRPC server (service) using the set options and parameter
 
 <dl class="py method">
 <dt id="pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.unregister">
-<code class="sig-name descname">unregister</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">registration</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.unregister" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">unregister</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">registration</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pip_services3_grpc.services.IRegisterable.html#pip_services3_grpc.services.IRegisterable.IRegisterable" title="pip_services3_grpc.services.IRegisterable.IRegisterable">pip_services3_grpc.services.IRegisterable.IRegisterable</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint.unregister" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unregisters a registerable object, so that it is no longer used in dynamic
 endpoint discovery.</p>
 <dl class="field-list simple">

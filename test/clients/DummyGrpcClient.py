@@ -32,7 +32,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
             request.paging.skip += paging.skip
             request.paging.take = paging.take
 
-        response = self.call('get_dummies', self.__client, request)
+        response = self.call('get_dummies', self.__client, request).result()
         self._instrument(correlation_id, 'dummy.get_page_by_filter')
         items = []
         for item in response.data:
@@ -44,7 +44,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
         request = dummies_pb2.DummyIdRequest()
         request.dummy_id = dummy_id
 
-        response = self.call('get_dummy_by_id', self.__client, request)
+        response = self.call('get_dummy_by_id', self.__client, request).result()
         self._instrument(correlation_id, 'dummy.get_one_by_id')
         result = Dummy(response.id, response.key, response.content)
         if response is not None and response.id == '' and response.key == '':
@@ -60,7 +60,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
         request.dummy.key = dummy.key
         request.dummy.content = dummy.content
 
-        response = self.call('create_dummy', self.__client, request)
+        response = self.call('create_dummy', self.__client, request).result()
 
         self._instrument(correlation_id, 'dummy.create')
 
@@ -78,7 +78,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
         request.dummy.key = dummy.key
         request.dummy.content = dummy.content
 
-        response = self.call('update_dummy', self.__client, request)
+        response = self.call('update_dummy', self.__client, request).result()
 
         self._instrument(correlation_id, 'dummy.update')
         result = Dummy(response.id, response.key, response.content)
@@ -91,7 +91,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
         request = dummies_pb2.DummyIdRequest()
         request.dummy_id = dummy_id
 
-        response = self.call('delete_dummy_by_id', self.__client, request)
+        response = self.call('delete_dummy_by_id', self.__client, request).result()
 
         self._instrument(correlation_id, 'dummy.delete')
 

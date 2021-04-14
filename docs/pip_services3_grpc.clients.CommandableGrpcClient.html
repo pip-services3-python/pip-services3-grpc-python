@@ -177,10 +177,10 @@
 <span id="pip-services3-grpc-clients-commandablegrpcclient-module"></span><h1>pip_services3_grpc.clients.CommandableGrpcClient module<a class="headerlink" href="#module-pip_services3_grpc.clients.CommandableGrpcClient" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="pip_services3_grpc.clients.CommandableGrpcClient.CommandableGrpcClient">
-<em class="property">class </em><code class="sig-prename descclassname">pip_services3_grpc.clients.CommandableGrpcClient.</code><code class="sig-name descname">CommandableGrpcClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.CommandableGrpcClient.CommandableGrpcClient" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pip_services3_grpc.clients.CommandableGrpcClient.</code><code class="sig-name descname">CommandableGrpcClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.CommandableGrpcClient.CommandableGrpcClient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="pip_services3_grpc.clients.GrpcClient.html#pip_services3_grpc.clients.GrpcClient.GrpcClient" title="pip_services3_grpc.clients.GrpcClient.GrpcClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_grpc.clients.GrpcClient.GrpcClient</span></code></a></p>
 <p>Abstract client that calls commandable GRPC service.</p>
-<p>Commandable services are generated automatically for <code class="xref py py-func docutils literal notranslate"><span class="pre">link()</span></code>
+<p>Commandable services are generated automatically for <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.commands.ICommandable.html#pip_services3_commons.commands.ICommandable.ICommandable" title="(in pip-services3-commons)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ICommandable</span></code></a>.
 Each command is exposed as Invoke method that receives all parameters as args.</p>
 <dl class="simple">
 <dt>### Configuration parameters ###</dt><dd><ul class="simple">
@@ -203,10 +203,28 @@ Each command is exposed as Invoke method that receives all parameters as args.</
 </ul>
 </dd>
 </dl>
-<p>TODO: description</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyCommandableGrpcClient</span><span class="p">(</span><span class="n">CommandableGrpcClient</span><span class="p">,</span> <span class="n">IMyClient</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">correlation_id</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_command</span><span class="p">(</span>
+                    <span class="s2">&quot;get_data&quot;</span><span class="p">,</span>
+                    <span class="n">correlation_id</span><span class="p">,</span>
+                    <span class="p">{</span> <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="nb">id</span> <span class="p">}</span>
+                <span class="p">)</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">new</span> <span class="n">MyCommandableGrpcClient</span><span class="p">()</span>
+<span class="n">client</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">ConfigParams</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">(</span>
+    <span class="s2">&quot;connection.protocol&quot;</span><span class="p">,</span> <span class="s2">&quot;http&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;connection.host&quot;</span><span class="p">,</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;connection.port&quot;</span><span class="p">,</span> <span class="mi">8080</span>
+<span class="p">))</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;123&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt id="pip_services3_grpc.clients.CommandableGrpcClient.CommandableGrpcClient.call_command">
-<code class="sig-name descname">call_command</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">correlation_id</span></em>, <em class="sig-param"><span class="n">params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.CommandableGrpcClient.CommandableGrpcClient.call_command" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">call_command</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em>, <em class="sig-param"><span class="n">correlation_id</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">params</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; Any<a class="headerlink" href="#pip_services3_grpc.clients.CommandableGrpcClient.CommandableGrpcClient.call_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls a remote method via GRPC commadable protocol.
 The call is made via Invoke method and all parameters are sent in args object.
 The complete route to remote method is defined as serviceName + ‘.’ + name.</p>

@@ -1,29 +1,28 @@
 # -*- coding: utf-8 -*-
 
 import json
-import grpc
 from concurrent import futures
+from typing import Any, List, Optional, Callable
 
-from pip_services3_commons.run.IOpenable import IOpenable
-from pip_services3_commons.config.IConfigurable import IConfigurable
-from pip_services3_commons.refer.IReferenceable import IReferenceable
-from pip_services3_commons.refer.IReferences import IReferences
+import grpc
 from pip_services3_commons.config.ConfigParams import ConfigParams
-from pip_services3_commons.run.Parameters import Parameters
-from pip_services3_components.log.CompositeLogger import CompositeLogger
-from pip_services3_components.count.CompositeCounters import CompositeCounters
-from pip_services3_commons.errors.ErrorDescriptionFactory import ErrorDescriptionFactory
-from pip_services3_commons.errors.ConnectionException import ConnectionException
-from pip_services3_commons.errors.InvocationException import InvocationException
-from pip_services3_commons.convert.JsonConverter import JsonConverter
-from pip_services3_rpc.connect.HttpConnectionResolver import HttpConnectionResolver
-from pip_services3_commons.validate.Schema import Schema
+from pip_services3_commons.config.IConfigurable import IConfigurable
 from pip_services3_commons.data.DataPage import DataPage
-
-from .IRegisterable import IRegisterable
+from pip_services3_commons.errors.ConnectionException import ConnectionException
+from pip_services3_commons.errors.ErrorDescriptionFactory import ErrorDescriptionFactory
+from pip_services3_commons.errors.InvocationException import InvocationException
+from pip_services3_commons.refer import IReferences
+from pip_services3_commons.refer.IReferenceable import IReferenceable
+from pip_services3_commons.run.IOpenable import IOpenable
+from pip_services3_commons.run.Parameters import Parameters
+from pip_services3_commons.validate import Schema
+from pip_services3_components.count.CompositeCounters import CompositeCounters
+from pip_services3_components.log.CompositeLogger import CompositeLogger
+from pip_services3_rpc.connect.HttpConnectionResolver import HttpConnectionResolver
 
 import pip_services3_grpc.protos.commandable_pb2 as commandable_pb2
 import pip_services3_grpc.protos.commandable_pb2_grpc as commandable_pb2_grpc
+from pip_services3_grpc.services.IRegisterable import IRegisterable
 
 
 class _CommandableMediator(commandable_pb2_grpc.CommandableServicer):
@@ -72,8 +71,19 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
         - counters: **"\*:counters:\*:\*:1.0"**;
         - discovery: **"\*:discovery:\*:\*:1.0"** (for the connection resolver).
 
-    ### Examples ###
-        TODO!!!
+    .. code-block:: python
+
+        def my_method(self, _config, _references):
+            endpoint = GrpcEndpoint()
+            if self._config:
+                endpoint.configure(self._config)
+            if self._references:
+                endpoint.set_references(self._references)
+            ...
+
+            self._endpoint.open(correlation_id)
+            ...
+
 
     """
 
@@ -93,20 +103,21 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
         "options.debug", None
     )
 
-    __server = None
-    __connection_resolver = HttpConnectionResolver()
-    __logger = CompositeLogger()
-    __counters = CompositeCounters()
-    __maintenance_enabled = False
-    __file_max_size = 200 * 1024 * 1024
-    __uri = None
-    __registrations = []
-    __commandable_methods = None
-    __commandable_schemas = None
-    __commandable_service = None
-    __interceptors = []
+    def __init__(self):
+        self.__server: Any = None
+        self.__connection_resolver = HttpConnectionResolver()
+        self.__logger = CompositeLogger()
+        self.__counters = CompositeCounters()
+        self.__maintenance_enabled = False
+        self.__file_max_size = 200 * 1024 * 1024
+        self.__uri: str = None
+        self.__registrations: List[IRegisterable] = []
+        self.__commandable_methods: Any = None
+        self.__commandable_schemas: Any = None
+        self.__commandable_service: Any = None
+        self.__interceptors = []
 
-    def configure(self, config):
+    def configure(self, config: ConfigParams):
         """
         Configures this HttpEndpoint using the given configuration parameters.
         
@@ -131,7 +142,7 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
         self.__file_max_size = ConfigParams().get_as_long_with_default(key='options.file_max_size',
                                                                        default_value=self.__file_max_size)
 
-    def set_references(self, references):
+    def set_references(self, references: IReferences):
         """
         Sets references to this endpoint's logger, counters, and connection resolver.
 
@@ -146,13 +157,13 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
         self.__counters.set_references(references)
         self.__connection_resolver.set_references(references)
 
-    def is_open(self):
+    def is_open(self) -> bool:
         """
         :return: whether or not this endpoint is open with an actively listening GRPC server.
         """
         return self.__server is not None
 
-    def open(self, correlation_id, max_workers=15):
+    def open(self, correlation_id: Optional[str], max_workers: int = 15):
         """
         Opens a connection using the parameters resolved by the referenced connection
         resolver and creates a GRPC server (service) using the set options and parameters.
@@ -164,13 +175,13 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
             return
 
         connection = self.__connection_resolver.resolve(correlation_id)
-        self.__uri = connection.get_uri()
+        self.__uri = connection.get_as_string('uri')
         try:
             self.__connection_resolver.register(correlation_id)
 
             credentials = None
 
-            if connection.get_protocol('http') == 'https':
+            if connection.get_as_string_with_default('protocol', 'http') == 'https':
                 ssl_key_file = connection.get_as_nullable_string('ssl_key_file')
                 ssl_crt_file = connection.get_as_nullable_string('ssl_crt_file')
 
@@ -190,10 +201,11 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
                 self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))
 
             if credentials:
-                self.__server.add_secure_port(str(connection.get_host()) + ':' +
-                                              str(connection.get_port()), credentials)
+                self.__server.add_secure_port(str(connection.get_as_string('host')) + ':' +
+                                              str(connection.get_as_string('port')), credentials)
             else:
-                self.__server.add_insecure_port(str(connection.get_host()) + ':' + str(connection.get_port()))
+                self.__server.add_insecure_port(
+                    str(connection.get_as_string('host')) + ':' + str(connection.get_as_string('port')))
             # Start operations
             self.__server.start()
             self.__connection_resolver.register(correlation_id)
@@ -206,9 +218,10 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
                 ex).with_details('url', self.__uri)
             raise err
 
-    def close(self, correlation_id):
+    def close(self, correlation_id: Optional[str]):
         """
         Closes this endpoint and the GRPC server (service) that was opened earlier.
+
         :param correlation_id: (optional) transaction id to trace execution through call chain.
         """
         if self.__server is not None:
@@ -228,17 +241,16 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
             except Exception as ex:
                 self.__logger.warn(correlation_id, 'Failed while closing GRPC service: '.format(ex))
 
-    def register(self, registration):
+    def register(self, registration: IRegisterable):
         """
         Registers a registerable object for dynamic endpoint discovery.
 
         :param registration: the registration to add.
-        :return:
         """
         if registration is not None:
             self.__registrations.append(registration)
 
-    def unregister(self, registration):
+    def unregister(self, registration: IRegisterable):
         """
         Unregisters a registerable object, so that it is no longer used in dynamic
         endpoint discovery.
@@ -261,7 +273,7 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
 
         self.register_service(self.__commandable_service)
 
-    def __invoke_commandable_method(self, request, context):
+    def __invoke_commandable_method(self, request: Any, context: Any):
         method = request.method
         action = self.__commandable_methods[method] if self.__commandable_methods else None
         correlation_id = request.correlation_id
@@ -337,16 +349,29 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
 
         return response
 
+    def _register_method(self, name: str, schema: Schema, action: Callable[[Optional[str], Optional[str], Parameters], None]):
+        """
+        Registers a method in GRPC service.
+
+        :param name: a method name
+        :param schema: a validation schema to validate received parameters.
+        :param action: an action function that is called when operation is invoked.
+        """
+        # TODO
+        pass
+
     def register_service(self, service):
         """
         Registers a service with related implementation
+
         :param service: a GRPC service object.
         """
         service.add_servicer_to_server(self.__server)
 
-    def register_commandable_method(self, method, schema, action):
+    def _register_commandable_method(self, method: str, schema: Schema,
+                                     action: Callable[[Optional[str], Optional[str], Parameters], None]):
         """
-        Registers a commandable method in this objects GRPC server (service) by the given name.,
+        Registers a commandable method in this objects GRPC server (service) by the given name.
 
         :param method: the GRPC method name.
         :param schema: the schema to use for parameter validation.
@@ -358,5 +383,10 @@ class GrpcEndpoint(IOpenable, IConfigurable, IReferenceable):
         self.__commandable_schemas = self.__commandable_schemas or {}
         self.__commandable_schemas[method] = schema
 
-    def register_interceptor(self, interceptor):
+    def _register_interceptor(self, interceptor: Callable):
+        """
+        Registers a middleware for methods in GRPC endpoint.
+
+        :param interceptor: the middleware action to perform at the given route.
+        """
         self.__interceptors.append(interceptor)

@@ -177,7 +177,7 @@
 <span id="pip-services3-grpc-clients-grpcclient-module"></span><h1>pip_services3_grpc.clients.GrpcClient module<a class="headerlink" href="#module-pip_services3_grpc.clients.GrpcClient" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="pip_services3_grpc.clients.GrpcClient.GrpcClient">
-<em class="property">class </em><code class="sig-prename descclassname">pip_services3_grpc.clients.GrpcClient.</code><code class="sig-name descname">GrpcClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">client_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pip_services3_grpc.clients.GrpcClient.</code><code class="sig-name descname">GrpcClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">client_name</span><span class="p">:</span> <span class="n"><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.run.IOpenable.html#pip_services3_commons.run.IOpenable.IOpenable" title="(in pip-services3-commons)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_commons.run.IOpenable.IOpenable</span></code></a>, <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.refer.IReferenceable.html#pip_services3_commons.refer.IReferenceable.IReferenceable" title="(in pip-services3-commons)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_commons.refer.IReferenceable.IReferenceable</span></code></a>, <a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.config.IConfigurable.html#pip_services3_commons.config.IConfigurable.IConfigurable" title="(in pip-services3-commons)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pip_services3_commons.config.IConfigurable.IConfigurable</span></code></a></p>
 <p>Abstract client that calls remove endpoints using GRPC protocol.</p>
 <dl class="simple">
@@ -195,68 +195,56 @@
 </ul>
 </dd>
 </dl>
-<p># TODO description</p>
-<dl class="py method">
-<dt id="pip_services3_grpc.clients.GrpcClient.GrpcClient.add_filter_params">
-<code class="sig-name descname">add_filter_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">filter</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.add_filter_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>AddFilterParams method are adds filter parameters (with the same name as they defined)
-to invocation parameter map.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>params</strong> – invocation parameters.</p></li>
-<li><p><strong>filter</strong> – (optional) filter parameters</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>invocation parameters with added filter parameters.</p>
-</dd>
-</dl>
-</dd></dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyGrpcClient</span><span class="p">(</span><span class="n">GrpcClient</span><span class="p">,</span> <span class="n">IMyClient</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">correlation_id</span><span class="p">,</span> <span class="nb">id</span> <span class="p">):</span>
+        <span class="n">timing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">(</span><span class="n">correlation_id</span><span class="p">,</span> <span class="s1">&#39;myclient.get_data&#39;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;get_data&quot;</span><span class="p">,</span> <span class="n">correlation_id</span><span class="p">,</span> <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">id</span> <span class="p">})</span>
+        <span class="n">timing</span><span class="o">.</span><span class="n">end_timing</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="o">...</span>
 
-<dl class="py method">
-<dt id="pip_services3_grpc.clients.GrpcClient.GrpcClient.add_paging_params">
-<code class="sig-name descname">add_paging_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">paging</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.add_paging_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>AddPagingParams method are adds paging parameters (skip, take, total) to invocation parameter map.
-:param params: invocation parameters.
-:param paging: (optional) paging parameters
-:return: invocation parameters with added paging parameters.</p>
-</dd></dl>
-
+<span class="n">client</span> <span class="o">=</span> <span class="n">MyGrpcClient</span><span class="p">()</span>
+<span class="n">client</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">ConfigParams</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">(</span>
+    <span class="s2">&quot;connection.protocol&quot;</span><span class="p">,</span> <span class="s2">&quot;http&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;connection.host&quot;</span><span class="p">,</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;connection.port&quot;</span><span class="p">,</span> <span class="mi">8080</span>
+<span class="p">))</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;123&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt id="pip_services3_grpc.clients.GrpcClient.GrpcClient.call">
-<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">client</span></em>, <em class="sig-param"><span class="n">request</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.call" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n"><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em>, <em class="sig-param"><span class="n">client</span><span class="p">:</span> <span class="n">Any</span></em>, <em class="sig-param"><span class="n">request</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; concurrent.futures._base.Future<a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls a remote method via GRPC protocol.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> – name of the calling method</p></li>
 <li><p><strong>client</strong> – current client</p></li>
 <li><p><strong>request</strong> – (optional) request object.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(optional) Future that receives result object or error.</p>
+<dd class="field-even"><p>(optional) future that receives result object or error.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.clients.GrpcClient.GrpcClient.close">
-<code class="sig-name descname">close</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.close" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Closes component and frees used resources.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>correlation_id</strong> – (optional) transaction id to trace execution through call chain.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Future that receives error or null no errors occured.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.clients.GrpcClient.GrpcClient.configure">
-<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.configure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.config.ConfigParams.html#pip_services3_commons.config.ConfigParams.ConfigParams" title="(in pip-services3-commons)">pip_services3_commons.config.ConfigParams.ConfigParams</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configures component by passing configuration parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -267,7 +255,7 @@ to invocation parameter map.</p>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.clients.GrpcClient.GrpcClient.is_open">
-<code class="sig-name descname">is_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.is_open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="http://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.is_open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if the component is opened.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -278,21 +266,18 @@ to invocation parameter map.</p>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.clients.GrpcClient.GrpcClient.open">
-<code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">open</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">correlation_id</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens the component.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>correlation_id</strong> – (optional) transaction id to trace execution through call chain.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Future that receives error or null no errors occured.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="pip_services3_grpc.clients.GrpcClient.GrpcClient.set_references">
-<code class="sig-name descname">set_references</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">references</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.set_references" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_references</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">references</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pip-services3-python.github.io/pip-services3-commons-python/pip_services3_commons.refer.IReferences.html#pip_services3_commons.refer.IReferences.IReferences" title="(in pip-services3-commons)">pip_services3_commons.refer.IReferences.IReferences</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pip_services3_grpc.clients.GrpcClient.GrpcClient.set_references" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets references to dependent components.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

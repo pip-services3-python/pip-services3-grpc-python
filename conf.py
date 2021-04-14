@@ -43,7 +43,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [ 
+exclude_patterns = [
     'conf',
     'examples',
     'setup',
@@ -65,8 +65,12 @@ html_static_path = ['_static']
 # Looks for objects in external projects
 intersphinx_mapping = {'python': ('http://docs.python.org/3/', 'https://docs.python.org/3/objects.inv'),
 
-                       'pip_services3_commons': ('https://pip-services3-python.github.io/pip-services3-commons-python/', 
+                       'pip_services3_commons': ('https://pip-services3-python.github.io/pip-services3-commons-python/',
                            'https://pip-services3-python.github.io/pip-services3-commons-python/objects.inv'),
 
-                       'pip_services3_components': ('https://pip-services3-python.github.io/pip-services3-components-python/', 
-                           'https://pip-services3-python.github.io/pip-services3-components-python/objects.inv') }
+                       'pip_services3_components': ('https://pip-services3-python.github.io/pip-services3-components-python/',
+                           'https://pip-services3-python.github.io/pip-services3-components-python/objects.inv'),
+
+                       'pip_services3_rpc': ('https://pip-services3-python.github.io/pip-services3-rpc-python/',
+                            'https://pip-services3-python.github.io/pip-services3-rpc-python/objects.inv')
+                       }
