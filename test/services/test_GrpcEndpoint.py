@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import time
+from pip_services3_commons.config.ConfigParams import ConfigParams
 
 from pip_services3_grpc.services.GrpcEndpoint import GrpcEndpoint
-from pip_services3_commons.config.ConfigParams import ConfigParams
 
 grpc_config = ConfigParams.from_tuples(
     'connection.protocol',

@@ -2,16 +2,12 @@
 
 from pip_services3_commons.config.ConfigParams import ConfigParams
 from pip_services3_commons.refer.Descriptor import Descriptor
-from pip_services3_commons.refer.Reference import Reference
 from pip_services3_commons.refer.References import References
 
+from .DummyClientFixture import DummyClientFixture
+from .DummyCommandableGrpcClient import DummyCommandableGrpcClient
 from ..DummyController import DummyController
 from ..services.DummyCommandableGrpcService import DummyCommandableGrpcService
-from .DummyCommandableGrpcClient import DummyCommandableGrpcClient
-from .DummyClientFixture import DummyClientFixture
-
-from ..protos import dummies_pb2_grpc
-from ..protos import dummies_pb2
 
 grpc_config = ConfigParams.from_tuples(
     'connection.protocol',
@@ -57,9 +53,6 @@ class TestDummyCommandableGrpcClient:
         self.client.configure(grpc_config)
         self.client.set_references(References())
         self.client.open(None)
-
-    def teardown_method(self, method=None):
-        self.client.close(None)
 
     def test_crud_operations(self):
         self.fixture.test_crud_operations()

@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import json
-import time
-import grpc
 
-import requests
+import grpc
 from pip_services3_commons.config import ConfigParams
 from pip_services3_commons.refer import References, Descriptor
-from pip_services3_commons.run import Parameters
-from pip_services3_commons.data import IdGenerator
 
-import pip_services3_grpc.protos.commandable_pb2_grpc as commandable_pb2_grpc
 import pip_services3_grpc.protos.commandable_pb2 as commandable_pb2
-
+import pip_services3_grpc.protos.commandable_pb2_grpc as commandable_pb2_grpc
+from .DummyCommandableGrpcService import DummyCommandableGrpcService
 from ..Dummy import Dummy
 from ..DummyController import DummyController
-from .DummyCommandableGrpcService import DummyCommandableGrpcService
 
 port = 3001
 grpc_config = ConfigParams.from_tuples(
@@ -32,6 +27,7 @@ DUMMY2 = Dummy('2', 'Key 2', 'Content 2')
 
 
 class TestDummyCommandableGrpcService():
+    references = None
     controller = None
     service = None
     client = None
@@ -69,7 +65,7 @@ class TestDummyCommandableGrpcService():
         request.correlation_id = '123'
         request.method = 'dummy.create_dummy'
         request.args_empty = False
-        request.args_json = json.dumps({'dummy': {'id': DUMMY1.id, 'key': DUMMY1.key, 'content': DUMMY1.content}})
+        request.args_json = json.dumps({'dummy': DUMMY1.__dict__})
 
         response = self.client.invoke(request)
 
@@ -85,7 +81,7 @@ class TestDummyCommandableGrpcService():
         request.correlation_id = '123'
         request.method = 'dummy.create_dummy'
         request.args_empty = False
-        request.args_json = json.dumps({'dummy': {'id': DUMMY2.id, 'key': DUMMY2.key, 'content': DUMMY2.content}})
+        request.args_json = json.dumps({'dummy': DUMMY2.__dict__})
 
         response = self.client.invoke(request)
 
@@ -120,7 +116,7 @@ class TestDummyCommandableGrpcService():
         request.correlation_id = '123'
         request.method = 'dummy.update_dummy'
         request.args_empty = False
-        request.args_json = json.dumps({'dummy': {'id': dummy.id, 'key': dummy.content, 'content': dummy.content}})
+        request.args_json = json.dumps({'dummy': dummy.__dict__})
 
         response = self.client.invoke(request)
 

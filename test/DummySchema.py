@@ -8,7 +8,6 @@ class DummySchema(ObjectSchema):
 
     def __init__(self):
         super().__init__()
-        # TODO add TypeCodes
-        self.with_optional_property("id", None)
-        self.with_required_property("key", None)
-        self.with_optional_property("content", None)
+        self.with_optional_property("id", TypeCode.String)
+        self.with_required_property("key", TypeCode.String)
+        self.with_optional_property("content", TypeCode.String)

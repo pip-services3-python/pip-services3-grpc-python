@@ -12,7 +12,6 @@ class DefaultGrpcFactory(Factory):
 
     See :class:`Factory <pip_services3_components.build.Factory.Factory>`, :class:`GrpcEndpoint <pip_services3_grpc.services.GrpcEndpoint.GrpcEndpoint>`, :class:`HeartbeatGrpcService <pip_services3_grpc.services.HeartbeatGrpcService.HeartbeatGrpcService>`, :class:`StatusGrpcService <pip_services3_grpc.services.StatusGrpcService.StatusGrpcService>`
     """
-    descriptor = Descriptor("pip-services", "factory", "grpc", "default", "1.0")
     GrpcEndpointDescriptor = Descriptor("pip-services", "endpoint", "grpc", "*", "1.0")
 
     def __init__(self):

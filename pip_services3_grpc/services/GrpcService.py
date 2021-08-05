@@ -2,19 +2,22 @@
 from abc import abstractmethod
 from typing import List, Any, Optional, Callable
 
+from grpc import ServicerContext
 from pip_services3_commons.config.ConfigParams import ConfigParams
 from pip_services3_commons.config.IConfigurable import IConfigurable
+from pip_services3_commons.data import FilterParams, PagingParams
 from pip_services3_commons.errors.InvalidStateException import InvalidStateException
 from pip_services3_commons.refer.DependencyResolver import DependencyResolver
 from pip_services3_commons.refer.IReferences import IReferences
 from pip_services3_commons.refer.IUnreferenceable import IUnreferenceable
-from pip_services3_commons.run import Parameters
 from pip_services3_commons.run.IOpenable import IOpenable
 from pip_services3_commons.validate import Schema
-from pip_services3_components.count import CounterTiming
 from pip_services3_components.count.CompositeCounters import CompositeCounters
 from pip_services3_components.log.CompositeLogger import CompositeLogger
+from pip_services3_components.trace.CompositeTracer import CompositeTracer
+from pip_services3_rpc.services.InstrumentTiming import InstrumentTiming
 
+from pip_services3_grpc.protos.commandable_pb2 import InvokeRequest
 from .GrpcEndpoint import GrpcEndpoint
 from .IRegisterable import IRegisterable
 
@@ -41,29 +44,39 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
 
     .. code-block:: python
 
-        class MyGrpcService(GrpcService):
+        class MyGrpcService(GrpcService, my_data_pb2_grpc.MyDataServicer):
             __controller: IMyController
             ...
             def __init__(self):
-                suoer().__init__('... path to proto ...', '.. service name ...')
+                suoer().__init__('.. service name ...')
                 self._dependency_resolver.put(
                     "controller",
                     Descriptor("mygroup","controller","*","*","1.0")
                 )
 
+            def add_servicer_to_server(self, server):
+                my_data_pb2_grpc.add_MyDataServicer_to_server(self, server)
 
             def set_references(self, references):
                 super().set_references(references)
                 self._controller = this._dependency_resolver.get_required("controller")
 
+            def __number_of_calls_interceptor(self, request: InvokeRequest, context: ServicerContext,
+                                    next: Callable[[InvokeRequest, ServicerContext], Any]) -> Any:
+                self.__number_of_calls += 1
+                return next(request, context)
+
+            def __method(request: InvokeRequest, context: ServicerContext):
+                correlationId = request.correlationId
+                id = request.id
+                return self._controller.get_my_data(correlationId, id)
 
             def register(self):
-                def method(correlation_id, args, getted_method):
-                    correlationId = call.request.correlationId;
-                    id = call.request.id;
-                    self._controller.getMyData(correlationId, id, callback);
 
-                self.register_commadable_method("get_mydata", None, method)
+                self._register_interceptor(self.__number_of_calls_interceptor)
+                self._register_method("get_mydata", None, method)
+                
+                self._register_service(self)
                 ...
 
 
@@ -110,8 +123,11 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
         # The performance counters.
         self._counters = CompositeCounters()
 
-        self.__service_name = service_name
-        self.__registrable = lambda implementation: self._register_service(implementation)
+        # The tracer.
+        self._tracer: CompositeTracer = CompositeTracer()
+
+        self.__service_name: str = service_name
+        self.__registrable = lambda implementation: self.__register_service(implementation)
 
     def configure(self, config: ConfigParams):
         """
@@ -136,6 +152,7 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
         """
         self._logger.set_references(references)
         self._counters.set_references(references)
+        self._tracer.set_references(references)
         self._dependency_resolver.set_references(references)
 
         # Get endpoint
@@ -149,7 +166,7 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
             self.__local_endpoint = False
 
         #  Add registration callback to the endpoint
-        self._endpoint.register(self)
+        self._endpoint.register(self)  # TODO check this
 
     def unset_references(self):
         """
@@ -157,7 +174,7 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
         """
         # Remove registration callback from endpoint
         if self._endpoint is not None:
-            self._endpoint.unregister(self.__registrable)
+            self._endpoint.unregister(self)  # TODO check this
             self._endpoint = None
 
     def __create_endpoint(self) -> GrpcEndpoint:
@@ -170,7 +187,7 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
 
         return endpoint
 
-    def _instrument(self, correlation_id: Optional[str], name: str) -> CounterTiming:
+    def _instrument(self, correlation_id: Optional[str], name: str) -> InstrumentTiming:
         """
         Adds instrumentation to log calls and measure call time.
         It returns a CounterTiming object that is used to end the time measurement.
@@ -181,7 +198,11 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
         """
         self._logger.trace(correlation_id, 'Executing {} method'.format(name))
         self._counters.increment_one(name + '.exec_time')
-        return self._counters.begin_timing(name + '.exec_time')
+
+        counter_timing = self._counters.begin_timing(name + '.exec_time')
+        trace_timing = self._tracer.begin_trace(correlation_id, name, None)
+        return InstrumentTiming(correlation_id, name, 'exec', self._logger, self._counters, counter_timing,
+                                trace_timing)
 
     def _instrument_error(self, correlation_id: Optional[str], name: str, err: Exception, reerror=False):
         """
@@ -213,7 +234,6 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
 
         :param correlation_id: (optional) transaction id to trace execution through call chain.
         """
-        # TODO maybe need add async
 
         if self.__opened:
             return None
@@ -243,38 +263,104 @@ class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
             return None
 
         if self._endpoint is None:
-            raise InvalidStateException(correlation_id, 'NO_ENDPOINT', 'HTTP endpoint is missing')
+            raise InvalidStateException(correlation_id, 'NO_ENDPOINT', 'GRPC endpoint is missing')
 
         if self.__local_endpoint:
             self._endpoint.close(correlation_id)
 
         self.__opened = False
 
-    def register_commadable_method(self, method: str, schema: Schema,
-                                   action: Callable[[Optional[str], Optional[str], Parameters], None]):
-        """
-        Registers a commandable method in this objects GRPC server (service) by the given name.
+    def __register_service(self, implementation: 'GrpcService'):
+        # self.register()
+        implementation.__dict__.update(self.__implementation)
+        if self._endpoint is not None:
+            self._endpoint.register_service(implementation)
 
-        :param method: the GRPC method name.
-        :param schema: the schema to use for parameter validation.
-        :param action: the action to perform at the given route.
-        """
-        self._endpoint._register_commandable_method(method, schema, action)
+    def _apply_validation(self, schema: Schema, action: Callable[[InvokeRequest, ServicerContext], Any]) -> Callable[
+        [InvokeRequest, ServicerContext], Any]:
+        # Create an action function
+        def action_wrapper(request: InvokeRequest, context: ServicerContext):
+            # Validate object
+            if schema and request:
+                value = request
+                if hasattr(value, 'to_object') and callable(value.to_object):
+                    value = value.to_object()
 
-    def _register_interceptor(self, action: Callable):
+                # Hack validation for filter and paging params
+                validate_object = {}
+                if hasattr(value, 'filter'):
+                    validate_object['filter'] = FilterParams()
+                    validate_object['filter'].update(value.filter)
+                if hasattr(value, 'paging'):
+                    validate_object['paging'] = PagingParams(value.paging.skip,
+                                                             value.paging.take,
+                                                             value.paging.total)
+                if validate_object:
+                    validate_object = type('ValidObject', (object,), validate_object)
+
+                # Perform validation
+                correlation_id = value.correlation_id
+                schema.validate_and_throw_exception(correlation_id, validate_object or value, False)
+
+            return action(request, context)
+
+        return action_wrapper
+
+    def _apply_interceptors(self, action: Callable[[InvokeRequest, ServicerContext], Any]) -> Callable[
+        [InvokeRequest, ServicerContext], Any]:
+        action_wrapper = action
+
+        for index in reversed(range(len(self.__interceptors))):
+            interceptor = self.__interceptors[index]
+            wrap = lambda action: lambda request, context: interceptor(request, context, action)
+            action_wrapper = wrap(action_wrapper)
+
+        return action_wrapper
+
+    def _register_method(self, name: str, schema: Schema, action: Callable[[InvokeRequest, ServicerContext], Any]):
+        """
+        Registers a method in GRPC service.
+
+        :param name: a method name
+        :param schema: a validation schema to validate received parameters.
+        :param action: an action function that is called when operation is invoked.
+        """
+        if self.__implementation is None: return
+
+        action_wrapper = self._apply_validation(schema, action)
+        action_wrapper = self._apply_interceptors(action_wrapper)
+
+        # Assign method implementation
+        self.__implementation[name] = lambda request, context: action_wrapper(request, context)
+
+    def _register_method_with_auth(self, name: str, schema: Schema,
+                                   authorize: Callable[[InvokeRequest, ServicerContext, Callable], Any],
+                                   action: Callable[[InvokeRequest, ServicerContext, Callable], Any]):
+        """
+        Registers a method with authorization.
+
+        :param name: a method name
+        :param schema: a validation schema to validate received parameters.
+        :param authorize: an authorization interceptor
+        :param action: an action function that is called when operation is invoked.
+        """
+
+        action_wrapper = self._apply_validation(schema, action)
+        # Add authorization just before validation
+        action_wrapper = lambda request, context: authorize(request, context, action_wrapper)
+        action_wrapper = self._apply_interceptors(action_wrapper)
+
+        # Assign method implementation
+        self.__implementation[name] = lambda request, context: action_wrapper(request, context)
+
+    def _register_interceptor(self, action: Callable[[InvokeRequest, ServicerContext, Callable], Any]):
         """
         Registers a middleware for methods in GRPC endpoint.
 
         :param action: an action function that is called when middleware is invoked.
         """
         if self._endpoint is not None:
-            self._endpoint._register_interceptor(action)
-
-    def _register_service(self, implementation: 'GrpcService'):
-        # self.register()
-
-        if self._endpoint is not None:
-            self._endpoint.register_service(implementation)
+            self.__interceptors.append(lambda request, context, next: action(request, context, next))
 
     @abstractmethod
     def register(self):

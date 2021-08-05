@@ -3,9 +3,7 @@
 import json
 from typing import Any, Optional
 
-from pip_services3_commons.errors.ApplicationException import ApplicationException
 from pip_services3_commons.errors.ApplicationExceptionFactory import ApplicationExceptionFactory
-from pip_services3_commons.errors.ErrorDescription import ErrorDescription
 
 from .GrpcClient import GrpcClient
 from ..protos import commandable_pb2
@@ -70,7 +68,7 @@ class CommandableGrpcClient(GrpcClient):
         # Instance of client
         self.__client = commandable_pb2_grpc.CommandableStub
 
-    def call_command(self, name: str, correlation_id: Optional[str], params: Any) -> Any:
+    def call_command(self, name: str, correlation_id: Optional[str], params: dict) -> Any:
         """
         Calls a remote method via GRPC commadable protocol.
         The call is made via Invoke method and all parameters are sent in args object.
@@ -98,31 +96,21 @@ class CommandableGrpcClient(GrpcClient):
         request.args_json = json.dumps(params) if params is not None else ''
 
         try:
-            response = self.call('invoke', self.__client, request).result()
-            timing.end_timing()
-            # Handle error response
-            if response.error is not None and response.error.code != '':
-                err = ErrorDescription()
-                err.category = response.error.category
-                err.code = response.error.code
-                err.correlation_id = response.error.correlation_id
-                err.status = response.error.status
-                err.message = response.error.message
-                err.cause = response.error.cause
-                err.stack_trace = response.error.stack_trace
-                err.details = response.error.details
-                raise ApplicationExceptionFactory.create(err)
+            response = self.call('invoke', self.__client, request)
 
+            # Handle error response
+            if response.error and response.error.code != '':
+                raise ApplicationExceptionFactory.create(response.error)
+
+            # Handle empty response
             if response.result_empty or response.result_empty == '' or response.result_empty is None:
                 return None
 
             # Handle regular response
-            return response.result_json
+            return json.loads(response.result_json)
 
         except Exception as ex:
+            self._instrument_error(correlation_id, method, ex)
+            raise ex
+        finally:
             timing.end_timing()
-            # Handle unexpected error
-            err = ex
-            if not (type(ex) is ApplicationException):
-                err = ApplicationException().wrap(ex)
-            self._instrument_error(correlation_id, method, err, True)

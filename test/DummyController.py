@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
-
 import threading
+from typing import List, Optional
 
+from pip_services3_commons.commands import ICommandable, CommandSet
 from pip_services3_commons.data import FilterParams, PagingParams, DataPage, IdGenerator
-from pip_services3_commons.commands import ICommandable
 
-from .IDummyController import IDummyController
+from .Dummy import Dummy
 from .DummyCommandSet import DummyCommandSet
+from .IDummyController import IDummyController
+from .protos import dummies_pb2
 
 
 class DummyController(IDummyController, ICommandable):
-    _lock = None
-    _items = None
-    _command_set = None
 
     def __init__(self):
         self._lock = threading.Lock()
-        self._items = []
+        self.__entities: List[Dummy] = []
+        self.__command_set: DummyCommandSet = None
 
-    def get_command_set(self):
-        if self._command_set is None:
-            self._command_set = DummyCommandSet(self)
-        return self._command_set
+    def get_command_set(self) -> CommandSet:
+        if self.__command_set is None:
+            self.__command_set = DummyCommandSet(self)
+        return self.__command_set
 
-    def get_page_by_filter(self, correlation_id, filter, paging):
+    def get_page_by_filter(self, correlation_id: Optional[str], filter: FilterParams, paging: PagingParams) -> DataPage:
         filter = filter if filter is not None else FilterParams()
         key = filter.get_as_nullable_string("key")
 
@@ -31,72 +31,78 @@ class DummyController(IDummyController, ICommandable):
         skip = paging.get_skip(0)
         take = paging.get_take(100)
 
-        result = []
+        result = dummies_pb2.DummiesPage()
+
+        for item in self.__entities:
+            if key is not None and key != item.key:
+                continue
+
+            skip -= 1
+            if skip >= 0:
+                continue
+
+            take -= 1
+            if take < 0:
+                break
+
+            if not isinstance(item, dummies_pb2.Dummy):
+                pb2_item = dummies_pb2.Dummy()
+                pb2_item.id = item.id
+                pb2_item.content = item.content
+                pb2_item.key = item.key
+                item = pb2_item
+
+            result.data.append(item)
+
+        result.total = len(result.data)
+
+        return result
+
+    def get_one_by_id(self, correlation_id: Optional[str], id: str) -> Optional[Dummy]:
         self._lock.acquire()
         try:
-            for item in self._items:
-                if key is not None and key != item['key']:
-                    continue
-
-                skip -= 1
-                if skip >= 0:
-                    continue
-
-                take -= 1
-                if take < 0:
-                    break
-
-                result.append(item)
-        finally:
-            self._lock.release()
-
-        return DataPage(result, len(result))
-
-    def get_one_by_id(self, correlation_id, id):
-        self._lock.acquire()
-        try:
-            for item in self._items:
-                if item['id'] == id:
+            for item in self.__entities:
+                if item.id == id:
                     return item
         finally:
             self._lock.release()
 
-        return None
+        return dummies_pb2.Dummy()
 
-    def create(self, correlation_id, item):
+    def create(self, correlation_id: Optional[str], item: Dummy) -> Dummy:
         self._lock.acquire()
         try:
-            if 'id' not in item or item['id'] == '' or item['id'] is None:
-                item['id'] = IdGenerator.next_long()
+            if item.id == '' or item.id is None:
+                item.id = IdGenerator.next_long()
 
-            self._items.append(item)
+            self.__entities.append(item)
         finally:
             self._lock.release()
 
         return item
 
-    def update(self, correlation_id, new_item):
+    def update(self, correlation_id: Optional[str], new_item: Dummy) -> Optional[Dummy]:
         self._lock.acquire()
         try:
-            for index in range(len(self._items)):
-                item = self._items[index]
-                if item['id'] == new_item['id']:
-                    self._items[index] = new_item
+            for index in range(len(self.__entities)):
+                item = self.__entities[index]
+                if item.id == new_item.id:
+                    self.__entities[index] = new_item
                     return new_item
         finally:
             self._lock.release()
 
-        return None
+        return dummies_pb2.Dummy()
 
-    def delete_by_id(self, correlation_id, id):
+    def delete_by_id(self, correlation_id: Optional[str], id: str) -> Optional[Dummy]:
         self._lock.acquire()
         try:
-            for index in range(len(self._items)):
-                item = self._items[index]
-                if item['id'] == id:
-                    del self._items[index]
+            for index in range(len(self.__entities)):
+                item = self.__entities[index]
+                if item.id == id:
+                    del self.__entities[index]
                     return item
         finally:
             self._lock.release()
 
-        return None
+        return dummies_pb2.Dummy()

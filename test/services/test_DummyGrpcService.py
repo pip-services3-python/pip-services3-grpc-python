@@ -1,25 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import json
-import time
 import grpc
-from threading import Thread
-
 from pip_services3_commons.config import ConfigParams
 from pip_services3_commons.refer import References, Descriptor
-from pip_services3_commons.run import Parameters
-from pip_services3_commons.data import IdGenerator
 
-import pip_services3_grpc.protos.commandable_pb2_grpc as commandable_pb2_grpc
-import pip_services3_grpc.protos.commandable_pb2 as commandable_pb2
-
-from ..protos import dummies_pb2
-from ..protos import dummies_pb2_grpc
-
+from .DummyGrpcService import DummyGrpcService
 from ..Dummy import Dummy
 from ..DummyController import DummyController
-from .DummyGrpcService import DummyGrpcService
-from .DummyCommandableGrpcService import DummyCommandableGrpcService
+from ..protos import dummies_pb2
+from ..protos import dummies_pb2_grpc
 
 port = 3000
 grpc_config = ConfigParams.from_tuples(
@@ -36,6 +25,7 @@ DUMMY2 = Dummy('2', 'Key 2', 'Content 2')
 
 
 class TestDummyGrpcService:
+    references = None
     controller = None
     service = None
     client = None
@@ -67,6 +57,7 @@ class TestDummyGrpcService:
     def test_crud_operations(self):
         # Create one dummy
         request = dummies_pb2.DummyObjectRequest()
+
         request.dummy.id = DUMMY1.id
         request.dummy.key = DUMMY1.key
         request.dummy.content = DUMMY1.content
@@ -82,7 +73,9 @@ class TestDummyGrpcService:
         request.dummy.id = DUMMY2.id
         request.dummy.key = DUMMY2.key
         request.dummy.content = DUMMY2.content
+
         dummy = self.client.create_dummy(request)
+
         assert dummy is not None
         assert dummy.content == DUMMY2.content
         assert dummy.key == DUMMY2.key
@@ -90,13 +83,16 @@ class TestDummyGrpcService:
         # Get all dummies
         request = dummies_pb2.DummiesPageRequest()
         dummies = self.client.get_dummies(request)
+
         assert dummies is not None
         assert len(dummies.data) == 2
 
         # Get dummy by id
         request = dummies_pb2.DummyIdRequest()
         request.dummy_id = DUMMY2.id
+
         dummy = self.client.get_dummy_by_id(request)
+
         assert dummy.id == DUMMY2.id
         assert dummy.key == DUMMY2.key
         assert dummy.content == DUMMY2.content

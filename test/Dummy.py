@@ -1,20 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from pip_services3_commons.data.IStringIdentifiable import IStringIdentifiable
-from pip_services3_commons.data.ICloneable import ICloneable
 
 
-class Dummy(IStringIdentifiable, dict):
-    """
-    Implement dict for json serialization
-    """
-    id = ''
-    key = ''
-    content = ''
+class Dummy(IStringIdentifiable):
 
-    def __init__(self, id, key, content):
-
-        dict.__init__(self, id=id, key=key, content=content)
+    def __init__(self, id: str = None, key: str = None, content: str = None):
         self.id = id
         self.key = key
         self.content = content
@@ -23,5 +14,6 @@ class Dummy(IStringIdentifiable, dict):
         return Dummy(self.id, self.key, self.content)
 
     @staticmethod
-    def from_grpc_to_json(dummy):
-        return {'id': dummy.id, 'key': dummy.key, 'content': dummy.content}
+    def to_dict(dummy: 'Dummy') -> dict:
+        if dummy is not None:
+            return {'id': dummy.id, 'key': dummy.key, 'content': dummy.content}

@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-from concurrent import futures
-from concurrent.futures import Future
 from typing import Optional, Any
 
 import grpc
 from pip_services3_commons.config.ConfigParams import ConfigParams
 from pip_services3_commons.config.IConfigurable import IConfigurable
-from pip_services3_commons.data.StringValueMap import StringValueMap
 from pip_services3_commons.errors.ConnectionException import ConnectionException
 from pip_services3_commons.refer import IReferences
 from pip_services3_commons.refer.IReferenceable import IReferenceable
@@ -15,6 +12,8 @@ from pip_services3_components.count import CounterTiming
 from pip_services3_components.count.CompositeCounters import CompositeCounters
 from pip_services3_components.log.CompositeLogger import CompositeLogger
 from pip_services3_rpc.connect.HttpConnectionResolver import HttpConnectionResolver
+
+from pip_services3_grpc.protos.commandable_pb2 import InvokeRequest
 
 
 class GrpcClient(IOpenable, IReferenceable, IConfigurable):
@@ -75,25 +74,25 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
         self.__client_name = None
 
         # The GRPC client channel
-        self._channel = None
+        self._channel: grpc.Channel = None
 
         # The connection resolver.
-        self._connection_resolver = HttpConnectionResolver()
+        self._connection_resolver: HttpConnectionResolver = HttpConnectionResolver()
 
         # The logger.
-        self._logger = CompositeLogger()
+        self._logger: CompositeLogger = CompositeLogger()
 
         # The performance counters.
-        self._counters = CompositeCounters()
+        self._counters: CompositeCounters = CompositeCounters()
 
         # The configuration options.
-        self._options = ConfigParams()
+        self._options: ConfigParams = ConfigParams()
 
         # The connection timeout in milliseconds.
-        self._connection_timeout = 100000
+        self._connection_timeout: int = 100000
 
         # The invocation timeout in milliseconds.
-        self._timeout = 100000
+        self._timeout: int = 100000
 
         # The remote service uri which is calculated on open.
         self._uri: str = None
@@ -213,54 +212,20 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
             self._uri = None
             GrpcClient._connection_resolver = HttpConnectionResolver()
 
-    def call(self, method: str, client: Any, request: Any) -> Future:
+    def call(self, method: str, client: Any, request: Any) -> Any:
         """
         Calls a remote method via GRPC protocol.
 
         :param method: name of the calling method
         :param client: current client
         :param request: (optional) request object.
-        :return: (optional) future that receives result object or error.
+        :return: (optional) that receives result object or error.
         """
 
         client = client(self._channel)
-        executor = futures.ThreadPoolExecutor(max_workers=1)
-        response = executor.submit(client.__dict__[method], request)
+        return client.__dict__[method](request)
 
-        return response
+        # executor = futures.ThreadPoolExecutor(max_workers=1)
+        # response = executor.submit(client.__dict__[method], request)
 
-    def _add_filter_params(self, params: Any, filter: Any) -> Any:
-        """
-        AddFilterParams method are adds filter parameters (with the same name as they defined)
-        to invocation parameter map.
-
-        :param params: invocation parameters.
-        :param filter: (optional) filter parameters
-        :return: invocation parameters with added filter parameters.
-        """
-        params = StringValueMap() if params is None else params
-
-        if filter is not None:
-            for k in filter.keys():
-                params.put(k, filter[k])
-
-        return params
-
-    def _add_paging_params(self, params: Any, paging: Any) -> Any:
-        """
-        AddPagingParams method are adds paging parameters (skip, take, total) to invocation parameter map.
-
-        :param params: invocation parameters.
-        :param paging: (optional) paging parameters
-        :return: invocation parameters with added paging parameters.
-        """
-        params = StringValueMap() if params is None else params
-
-        if paging is not None:
-            params.put('total', paging.total)
-            if paging.skip is not None:
-                params.put('skip', paging.skip)
-            if paging.take is not None:
-                params.put('take', paging.take)
-
-        return params
+        # return response

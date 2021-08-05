@@ -23,7 +23,7 @@ except:
 
 setup(
     name='pip_services3_grpc',
-    version='3.1.0',
+    version='3.2.0',
     url='http://github.com/pip-services3-python/pip-services3-grpc-python',
     license='MIT',
     author='Conceptual Vision Consulting LLC',
@@ -54,9 +54,10 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ]    
 )
