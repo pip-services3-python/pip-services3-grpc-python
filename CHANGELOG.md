@@ -1,11 +1,12 @@
 # <img src="https://uploads-ssl.webflow.com/5ea5d3315186cf5ec60c3ee4/5edf1c94ce4c859f2b188094_logo.svg" alt="Pip.Services Logo" width="200"> <br/> MongoDB components for Python Changelog
 
 
-## <a name="3.2.0"></a> 3.2.0 (2021-08-05)
+## <a name="3.2.0-3.2.1"></a> 3.2.0-3.2.1 (2021-08-28)
 
 ### Bug fixes
 * Update tests
 * Fixed type hints
+* Fixed getting correlation id in call_command
 
 ### Features
 * CommandableGrpcService added _apply_commands

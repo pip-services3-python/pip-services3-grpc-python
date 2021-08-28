@@ -86,7 +86,7 @@ class CommandableGrpcClient(GrpcClient):
         request = commandable_pb2.InvokeRequest()
 
         request.method = method
-        request.correlation_id = correlation_id
+        request.correlation_id = correlation_id or ''
         request.args_empty = params is None
 
         for key in params.keys():
