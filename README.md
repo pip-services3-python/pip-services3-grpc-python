@@ -4,7 +4,7 @@ This module is a part of the [Pip.Services](http://pipservices.org) polyglot mic
 
 The grpc module is used to organize synchronous data exchange using calls through the gRPC protocol. It has implementations of both the server and client parts.
 
-- Note: in this version connection Proto files in runtime does not supported
+- Note: in this version connection Proto files in runtime does not supports
 
 
 The module contains the following packages:
