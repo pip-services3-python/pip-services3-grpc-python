@@ -101,7 +101,10 @@ class CommandableGrpcService(GrpcService, ABC):
                     if type(result) is DataPage:
                         response.result_json = json.dumps(result.to_json())
                     else:
-                        response.result_json = json.dumps(result) if result is not None else ''
+                        try:
+                            response.result_json = json.dumps(result) if result is not None else ''
+                        except TypeError:
+                            response.result_json = json.dumps(result.__dict__)
 
                     # TODO: Validate schema
                     if schema:

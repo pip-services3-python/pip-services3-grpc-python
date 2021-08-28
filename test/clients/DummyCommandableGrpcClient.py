@@ -17,22 +17,16 @@ class DummyCommandableGrpcClient(CommandableGrpcClient, IDummyClient):
         super().__init__('dummy')
 
     def get_dummies(self, correlation_id: Optional[str], filter: FilterParams, paging: PagingParams) -> DataPage:
-        result = self.call_command('get_dummies', correlation_id, {'filter': filter, 'paging': paging})
-        result['data'] = [Dummy(**item) for item in result['data']]
-        return DataPage(result['data'], result['total'])
+        return self.call_command('get_dummies', correlation_id, {'filter': filter, 'paging': paging})
 
     def get_dummy_by_id(self, correlation_id: Optional[str], dummy_id) -> Dummy:
-        result = self.call_command('get_dummy_by_id', correlation_id, {'dummy_id': dummy_id})
-        return None if not result else Dummy(**result)
+        return self.call_command('get_dummy_by_id', correlation_id, {'dummy_id': dummy_id})
 
     def create_dummy(self, correlation_id: Optional[str], dummy) -> Dummy:
-        result = self.call_command('create_dummy', correlation_id, {'dummy': dummy})
-        return None if not result else Dummy(**result)
+        return self.call_command('create_dummy', correlation_id, {'dummy': dummy})
 
     def update_dummy(self, correlation_id: Optional[str], dummy) -> Dummy:
-        result = self.call_command('update_dummy', correlation_id, {'dummy': dummy})
-        return None if not result else Dummy(**result)
+        return self.call_command('update_dummy', correlation_id, {'dummy': dummy})
 
     def delete_dummy(self, correlation_id: Optional[str], dummy_id: str) -> Dummy:
-        result = self.call_command('delete_dummy', correlation_id, {'dummy_id': dummy_id})
-        return None if not result else Dummy(**result)
+        return self.call_command('delete_dummy', correlation_id, {'dummy_id': dummy_id})

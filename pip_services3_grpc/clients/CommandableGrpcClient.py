@@ -3,6 +3,7 @@
 import json
 from typing import Any, Optional
 
+from pip_services3_commons.data import DataPage
 from pip_services3_commons.errors.ApplicationExceptionFactory import ApplicationExceptionFactory
 
 from .GrpcClient import GrpcClient
@@ -107,7 +108,18 @@ class CommandableGrpcClient(GrpcClient):
                 return None
 
             # Handle regular response
-            return json.loads(response.result_json)
+            json_response: dict = json.loads(response.result_json)
+
+            if json_response.get('data'):
+                page = DataPage(data=[], total=int(json_response.get('total')))
+
+                for item in json_response['data']:
+                    page.data.append(type('object', (object,), item))
+
+                return page
+
+            plain_object = type('object', (object,), json_response)
+            return plain_object
 
         except Exception as ex:
             self._instrument_error(correlation_id, method, ex)

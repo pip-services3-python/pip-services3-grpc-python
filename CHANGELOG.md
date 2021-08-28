@@ -7,6 +7,7 @@
 * Update tests
 * Fixed type hints
 * Fixed getting correlation id in call_command
+* Fixed json serialization for CommandableGrpcService
 
 ### Features
 * CommandableGrpcService added _apply_commands
