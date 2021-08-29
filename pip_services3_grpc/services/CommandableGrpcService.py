@@ -6,6 +6,7 @@ from typing import List, Callable, Optional, Any
 from grpc import ServicerContext
 from pip_services3_commons.commands import ICommand
 from pip_services3_commons.commands.CommandSet import CommandSet
+from pip_services3_commons.convert import JsonConverter
 from pip_services3_commons.data import DataPage
 from pip_services3_commons.errors import ErrorDescriptionFactory, InvocationException
 from pip_services3_commons.run import Parameters
@@ -98,13 +99,7 @@ class CommandableGrpcService(GrpcService, ABC):
                 try:
                     result = action(correlation_id, args)
                     response.result_empty = result is None
-                    if type(result) is DataPage:
-                        response.result_json = json.dumps(result.to_json())
-                    else:
-                        try:
-                            response.result_json = json.dumps(result) if result is not None else ''
-                        except TypeError:
-                            response.result_json = json.dumps(result.__dict__)
+                    response.result_json = JsonConverter.to_json(result) or ''
 
                     # TODO: Validate schema
                     if schema:
@@ -142,7 +137,7 @@ class CommandableGrpcService(GrpcService, ABC):
 
         return response
 
-    def _register_commandable_method(self, method: str, schema: Schema, action: Callable[[Optional[str], Any], Any]):
+    def _register_commandable_method(self, method: str, schema: Optional[Schema], action: Callable[[Optional[str], Any], Any]):
         """
         Registers a commandable method in this objects GRPC server (service) by the given name.
 

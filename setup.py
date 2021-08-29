@@ -23,7 +23,7 @@ except:
 
 setup(
     name='pip_services3_grpc',
-    version='3.2.1',
+    version='3.2.2',
     url='http://github.com/pip-services3-python/pip-services3-grpc-python',
     license='MIT',
     author='Conceptual Vision Consulting LLC',
