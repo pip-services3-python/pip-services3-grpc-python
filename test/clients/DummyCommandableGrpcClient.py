@@ -9,6 +9,7 @@ from pip_services3_commons.data.PagingParams import PagingParams
 from pip_services3_grpc.clients.CommandableGrpcClient import CommandableGrpcClient
 from .IDummyClient import IDummyClient
 from ..Dummy import Dummy
+from ..protos import dummies_pb2_grpc
 
 
 class DummyCommandableGrpcClient(CommandableGrpcClient, IDummyClient):

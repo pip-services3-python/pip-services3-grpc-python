@@ -16,7 +16,7 @@ class TestGrpcClient(GrpcClient):
     def __init__(self, client_name: str):
         super().__init__(client_name)
 
-    def call(self, method: str, client: Any, request: Any) -> Any:
+    def _call(self, method: str, client: Any, request: Any) -> Any:
         """
         Calls a remote method via GRPC protocol.
 
@@ -25,4 +25,4 @@ class TestGrpcClient(GrpcClient):
         :param request: (optional) request object.
         :return: the received result.
         """
-        return super(TestGrpcClient, self).call(method, client, request)
+        return super(TestGrpcClient, self)._call(method, client, request)

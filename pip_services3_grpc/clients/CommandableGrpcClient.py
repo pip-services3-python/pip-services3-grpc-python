@@ -38,6 +38,8 @@ class CommandableGrpcClient(GrpcClient):
     .. code-block:: python
 
         class MyCommandableGrpcClient(CommandableGrpcClient, IMyClient):
+            def __init__(self):
+                super().__init__('my_data')
             ...
             def get_data(self, correlation_id, id):
 
@@ -63,11 +65,10 @@ class CommandableGrpcClient(GrpcClient):
 
         :param name: a service name.
         """
-        super().__init__('commandable.Commandable')
+        super().__init__(commandable_pb2_grpc.CommandableStub, 'commandable.Commandable')
         # The service name
         self._name = name
         # Instance of client
-        self.__client = commandable_pb2_grpc.CommandableStub
 
     def call_command(self, name: str, correlation_id: Optional[str], params: dict) -> Any:
         """
@@ -97,7 +98,7 @@ class CommandableGrpcClient(GrpcClient):
         request.args_json = json.dumps(params) if params is not None else ''
 
         try:
-            response = self.call('invoke', self.__client, request)
+            response = self._call('invoke', correlation_id, request)
 
             # Handle error response
             if response.error and response.error.code != '':
@@ -122,7 +123,7 @@ class CommandableGrpcClient(GrpcClient):
             return plain_object
 
         except Exception as ex:
-            self._instrument_error(correlation_id, method, ex)
+            timing.end_failure(ex)
             raise ex
         finally:
-            timing.end_timing()
+            timing.end_success()

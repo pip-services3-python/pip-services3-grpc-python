@@ -14,11 +14,9 @@ from ..protos import dummies_pb2_grpc
 
 
 class DummyGrpcClient(GrpcClient, IDummyClient):
-    __client = None
 
     def __init__(self):
-        super().__init__('dummies.Dummies')
-        self.__client = dummies_pb2_grpc.DummiesStub
+        super().__init__(dummies_pb2_grpc.DummiesStub, 'dummies.Dummies')
 
     def get_dummies(self, correlation_id: Optional[str], filter: FilterParams, paging: PagingParams) -> DataPage:
         request = dummies_pb2.DummiesPageRequest()
@@ -33,7 +31,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
             request.paging.take = paging.take
 
         self._instrument(correlation_id, 'dummy.get_page_by_filter')
-        response = self.call('get_dummies', self.__client, request)
+        response = self._call('get_dummies', correlation_id, request)
         items = []
         for item in response.data:
             items.append(item)
@@ -45,7 +43,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
         request.dummy_id = dummy_id
 
         self._instrument(correlation_id, 'dummy.get_one_by_id')
-        response = self.call('get_dummy_by_id', self.__client, request)
+        response = self._call('get_dummy_by_id', correlation_id, request)
 
         if response is not None and response.id == '' and response.key == '':
             response = None
@@ -62,7 +60,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
 
         self._instrument(correlation_id, 'dummy.create')
 
-        response = self.call('create_dummy', self.__client, request)
+        response = self._call('create_dummy', correlation_id, request)
 
         if response is not None and response.id == '' and response.key == '':
             response = None
@@ -79,7 +77,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
 
         self._instrument(correlation_id, 'dummy.update')
 
-        response = self.call('update_dummy', self.__client, request)
+        response = self._call('update_dummy', correlation_id, request)
 
         if response is not None and response.id == '' and response.key == '':
             response = None
@@ -92,7 +90,7 @@ class DummyGrpcClient(GrpcClient, IDummyClient):
 
         self._instrument(correlation_id, 'dummy.delete')
 
-        response = self.call('delete_dummy_by_id', self.__client, request)
+        response = self._call('delete_dummy_by_id', correlation_id, request)
 
         if response is not None and response.id == '' and response.key == '':
             response = None

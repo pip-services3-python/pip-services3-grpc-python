@@ -1,5 +1,13 @@
 # <img src="https://uploads-ssl.webflow.com/5ea5d3315186cf5ec60c3ee4/5edf1c94ce4c859f2b188094_logo.svg" alt="Pip.Services Logo" width="200"> <br/> MongoDB components for Python Changelog
 
+## <a name="3.2.3"></a> 3.2.3 (2021-09-01)
+
+# Features
+* Update GrpcClient:
+    * add client_service param
+    * add tracer
+    * update _instrument method
+    * update _call method
 
 ## <a name="3.2.0-3.2.2"></a> 3.2.0-3.2.2 (2021-08-28)
 

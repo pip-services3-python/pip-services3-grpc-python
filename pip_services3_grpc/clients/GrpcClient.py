@@ -8,12 +8,11 @@ from pip_services3_commons.errors.ConnectionException import ConnectionException
 from pip_services3_commons.refer import IReferences
 from pip_services3_commons.refer.IReferenceable import IReferenceable
 from pip_services3_commons.run.IOpenable import IOpenable
-from pip_services3_components.count import CounterTiming
 from pip_services3_components.count.CompositeCounters import CompositeCounters
 from pip_services3_components.log.CompositeLogger import CompositeLogger
+from pip_services3_components.trace.CompositeTracer import CompositeTracer
 from pip_services3_rpc.connect.HttpConnectionResolver import HttpConnectionResolver
-
-from pip_services3_grpc.protos.commandable_pb2 import InvokeRequest
+from pip_services3_rpc.services.InstrumentTiming import InstrumentTiming
 
 
 class GrpcClient(IOpenable, IReferenceable, IConfigurable):
@@ -35,10 +34,12 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
     .. code-block:: python
 
         class MyGrpcClient(GrpcClient, IMyClient):
+            def __init__(self):
+                super().__init__(my_data_pb2_grpc.MyDataStub, 'my_data_v1')
             ...
             def get_data(self, correlation_id, id ):
                 timing = self.instrument(correlation_id, 'myclient.get_data')
-                result = self.call("get_data", correlation_id, { id: id })
+                result = self._call("get_data", correlation_id, { id: id })
                 timing.end_timing()
                 return result
             ...
@@ -64,14 +65,15 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
         "options.debug", True
     )
 
-    def __init__(self, client_name: str):
+    def __init__(self, service_client: Any, client_name: str = None):
         """
         Creates a new instance of the client.
 
+        :param service_client: service client class
         :param client_name: a client name.
         """
-        self.__client = None
-        self.__client_name = None
+        self.__client = service_client
+        self.__client_name = client_name
 
         # The GRPC client channel
         self._channel: grpc.Channel = None
@@ -97,7 +99,8 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
         # The remote service uri which is calculated on open.
         self._uri: str = None
 
-        self.__client_name = client_name
+        # The tracer.
+        self._tracer: CompositeTracer = CompositeTracer()
 
     def configure(self, config: ConfigParams):
         """
@@ -121,9 +124,10 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
         """
         self._logger.set_references(references)
         self._counters.set_references(references)
+        self._tracer.set_references(references)
         self._connection_resolver.set_references(references)
 
-    def _instrument(self, correlation_id: Optional[str], name: str) -> CounterTiming:
+    def _instrument(self, correlation_id: Optional[str], name: str) -> InstrumentTiming:
         """
         Adds instrumentation to log calls and measure call time.
         It returns a CounterTiming object that is used to end the time measurement.
@@ -133,23 +137,27 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
         :return: CounterTiming object to end the time measurement.
         """
         self._logger.trace(correlation_id, 'Executing {} method'.format(name))
-        self._counters.increment_one(name + '.call_count')
-        return self._counters.begin_timing(name + '.call_time')
+        self._counters.increment_one(name + '.call_time')
 
-    def _instrument_error(self, correlation_id: Optional[str], name: str, err: Exception, reerror=False):
-        """
-        Adds instrumentation to error handling.
+        counter_timing = self._counters.begin_timing(name + ".call_time")
+        tracer_timing = self._tracer.begin_trace(correlation_id, name, None)
+        return InstrumentTiming(correlation_id, name, 'exec', self._logger,
+                                self._counters, counter_timing, tracer_timing)
 
-        :param correlation_id: (optional) transaction id to trace execution through call chain.
-        :param name: a method name.
-        :param err: an occured error
-        :param reerror: if true - throw error
-        """
-        if err is not None:
-            self._logger.error(correlation_id, err, 'Failed to call {} method'.format(name))
-            self._counters.increment_one(name + '.call_errors')
-            if reerror is not None and reerror is True:
-                raise err
+    # def _instrument_error(self, correlation_id: Optional[str], name: str, err: Exception, reerror=False):
+    #     """
+    #     Adds instrumentation to error handling.
+    #
+    #     :param correlation_id: (optional) transaction id to trace execution through call chain.
+    #     :param name: a method name.
+    #     :param err: an occured error
+    #     :param reerror: if true - throw error
+    #     """
+    #     if err is not None:
+    #         self._logger.error(correlation_id, err, 'Failed to call {} method'.format(name))
+    #         self._counters.increment_one(name + '.call_errors')
+    #         if reerror is not None and reerror is True:
+    #             raise err
 
     def is_open(self) -> bool:
         """
@@ -186,7 +194,9 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
             else:
                 channel = grpc.insecure_channel(str(connection.get_as_string('host')) + ':' +
                                                 str(connection.get_as_string('port')), options=options)
+
             self._channel = channel
+            self.__client = self.__client(channel)
 
         except Exception as ex:
             raise ConnectionException(
@@ -205,27 +215,23 @@ class GrpcClient(IOpenable, IReferenceable, IConfigurable):
                 self._logger.debug(correlation_id, 'Closed GRPC service at {}'.format(self._uri))
             except Exception as ex:
                 self._logger.warn(correlation_id, 'Failed while closing GRPC service: {}'.format(ex))
-            # if self.__client is not None:
-            #     self.__client = None
+            # if self._client is not None:
+            #     self._client = None
             self._channel.close()
             self._channel = None
             self._uri = None
             GrpcClient._connection_resolver = HttpConnectionResolver()
 
-    def call(self, method: str, client: Any, request: Any) -> Any:
+    def _call(self, method: str, correlation_id: Optional[str], request: Any) -> Any:
         """
         Calls a remote method via GRPC protocol.
 
         :param method: name of the calling method
-        :param client: current client
+        :param correlation_id: (optional) transaction id to trace execution through call chain.
         :param request: (optional) request object.
         :return: (optional) that receives result object or error.
         """
+        if correlation_id and hasattr(request, 'correlation_id'):
+            request.correlation_id = correlation_id
 
-        client = client(self._channel)
-        return client.__dict__[method](request)
-
-        # executor = futures.ThreadPoolExecutor(max_workers=1)
-        # response = executor.submit(client.__dict__[method], request)
-
-        # return response
+        return self.__client.__dict__[method](request)
