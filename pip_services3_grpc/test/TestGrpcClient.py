@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from concurrent.futures import Future
 from typing import Any
-
-from pip_services3_grpc.protos.commandable_pb2 import InvokeRequest
 
 from pip_services3_grpc.clients.GrpcClient import GrpcClient
 

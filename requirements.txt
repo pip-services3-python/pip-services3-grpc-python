@@ -2,10 +2,7 @@ grpcio
 grpcio-tools
 protobuf
 pytest
-iso8601
-PyYAML
-pystache
 
-pip_services3_commons
-pip_services3_rpc
-pip_services3_components
+pip_services3_commons >= 3.3.10, < 4.0
+pip_services3_rpc >= 3.3.0, < 4.0
+pip_services3_components >= 3.5.4, < 4.0

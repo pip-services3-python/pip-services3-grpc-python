@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 from abc import ABC
 from typing import List, Callable, Optional, Any
 
@@ -7,7 +6,6 @@ from grpc import ServicerContext
 from pip_services3_commons.commands import ICommand
 from pip_services3_commons.commands.CommandSet import CommandSet
 from pip_services3_commons.convert import JsonConverter
-from pip_services3_commons.data import DataPage
 from pip_services3_commons.errors import ErrorDescriptionFactory, InvocationException
 from pip_services3_commons.run import Parameters
 from pip_services3_commons.validate import Schema

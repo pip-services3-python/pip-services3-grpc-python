@@ -12,7 +12,6 @@ from pip_services3_commons.errors.InvocationException import InvocationException
 from pip_services3_commons.refer import IReferences
 from pip_services3_commons.refer.IReferenceable import IReferenceable
 from pip_services3_commons.run.IOpenable import IOpenable
-from pip_services3_commons.run.Parameters import Parameters
 from pip_services3_commons.validate import Schema
 from pip_services3_components.count.CompositeCounters import CompositeCounters
 from pip_services3_components.log.CompositeLogger import CompositeLogger

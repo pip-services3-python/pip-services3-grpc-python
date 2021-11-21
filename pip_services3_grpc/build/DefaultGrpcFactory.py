@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from pip_services3_components.build.Factory import Factory
 from pip_services3_commons.refer.Descriptor import Descriptor
+from pip_services3_components.build.Factory import Factory
 
 from ..services.GrpcEndpoint import GrpcEndpoint
 

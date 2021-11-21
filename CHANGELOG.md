@@ -1,5 +1,10 @@
 # <img src="https://uploads-ssl.webflow.com/5ea5d3315186cf5ec60c3ee4/5edf1c94ce4c859f2b188094_logo.svg" alt="Pip.Services Logo" width="200"> <br/> MongoDB components for Python Changelog
 
+## <a name="3.2.4"></a> 3.2.4 (2021-11-21)
+
+### Bug fixes
+* Updated imports
+
 ## <a name="3.2.3"></a> 3.2.3 (2021-09-01)
 
 # Features
