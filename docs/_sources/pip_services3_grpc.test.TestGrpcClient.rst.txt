@@ -1,0 +1,7 @@
+pip\_services3\_grpc.test.TestGrpcClient module
+===============================================
+
+.. automodule:: pip_services3_grpc.test.TestGrpcClient
+   :members:
+   :undoc-members:
+   :show-inheritance:

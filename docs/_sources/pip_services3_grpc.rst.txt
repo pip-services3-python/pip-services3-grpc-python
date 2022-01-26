@@ -11,6 +11,7 @@ Subpackages
    pip_services3_grpc.clients
    pip_services3_grpc.protos
    pip_services3_grpc.services
+   pip_services3_grpc.test
 
 Module contents
 ---------------
