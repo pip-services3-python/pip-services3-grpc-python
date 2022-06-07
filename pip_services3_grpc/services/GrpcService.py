@@ -7,6 +7,7 @@ from pip_services3_commons.config.ConfigParams import ConfigParams
 from pip_services3_commons.config.IConfigurable import IConfigurable
 from pip_services3_commons.data import FilterParams, PagingParams
 from pip_services3_commons.errors.InvalidStateException import InvalidStateException
+from pip_services3_commons.refer import IReferenceable
 from pip_services3_commons.refer.DependencyResolver import DependencyResolver
 from pip_services3_commons.refer.IReferences import IReferences
 from pip_services3_commons.refer.IUnreferenceable import IUnreferenceable
@@ -22,7 +23,7 @@ from .GrpcEndpoint import GrpcEndpoint
 from .IRegisterable import IRegisterable
 
 
-class GrpcService(IOpenable, IConfigurable, IRegisterable, IUnreferenceable):
+class GrpcService(IOpenable, IConfigurable, IReferenceable, IUnreferenceable, IRegisterable):
     """
     Abstract service that receives remove calls via GRPC protocol.
 
